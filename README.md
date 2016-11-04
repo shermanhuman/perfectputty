@@ -2,7 +2,7 @@
 PuTTY comes with a number of really bad default settings, and to make things worse changing the 
 default session doesn't update any of the old entries you've made.  If you want to edit your existing 
 session en masse will have to resort to exporting a .reg file, editing and re-importing.  That's why
-it's so important to get your settings PERFECT before you even begin using Putty.
+it's so important to get your settings PERFECT before you even begin using PuTTY.
 
 I've put together some resources to change the defaults to what I consider sane and beautiful settings.
 
@@ -47,5 +47,5 @@ very readable.
 
 
 ### Terminal-type string
-Maybe: Putty defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color" 
+Maybe: PuTTY defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color" 
 for more terminal colors, but it breaks our color scheme.
