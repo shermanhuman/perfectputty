@@ -1,10 +1,19 @@
 # perfectputty
-PuTTY comes with a number of annoying default settings, and to make things worse changing the 
-defaults don't change any of the old entries you've made.  If you want to edit your existing 
+PuTTY comes with a number of really bad default settings, and to make things worse changing the 
+default session doesn't update any of the old entries you've made.  If you want to edit your existing 
 session en masse will have to resort to exporting a .reg file, editing and re-importing.  That's why
 it's so important to get your settings PERFECT before you even begin using Putty.
 
-I've put together this .reg file to change the defaults to what I consider sane and beautiful settings.  
+I've put together some resources to change the defaults to what I consider sane and beautiful settings.
+
+## Install
+
+- Right click the 'default-settings.reg' and merge into your registry.
+- Install the font.
+- Put the pop.wav somewhere you can live and point the default bell there.
+
+
+## Features
 
 ### Sweet color settings
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
