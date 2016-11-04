@@ -22,6 +22,7 @@ goals:
 - No invisible output!  The stock PuTTY color scheme makes it hard to see output in some cases, and impossible in others.
 - Clarity and contrast. 
 
+### Screenshots
 ![puttycolors-3](https://cloud.githubusercontent.com/assets/15676339/20016153/9b67ea84-a27b-11e6-8baf-09ddd03660f9.PNG)
 ![puttycolors](https://cloud.githubusercontent.com/assets/15676339/20016156/9b72a280-a27b-11e6-8d39-a2b854f461e0.PNG)
 ![puttycolors-2](https://cloud.githubusercontent.com/assets/15676339/20016154/9b6e22e6-a27b-11e6-9167-24cfd2148ce4.PNG)
@@ -54,5 +55,5 @@ audio cue, so I have included a brief and gentle sound.
 Reference: http://dag.wiee.rs/blog/content/improving-putty-settings-on-windows
 
 ### Terminal-type string
-Maybe: PuTTY defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color" 
-for more terminal colors, but it breaks our color scheme.
+Maybe: PuTTY defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color"
+or "putty-256color" for more terminal colors, but it breaks our simple color scheme.
