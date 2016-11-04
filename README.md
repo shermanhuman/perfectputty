@@ -33,6 +33,8 @@ enough for console and the others had various defects in rendering.  Inconsolata
 very readable.  Of course there are many variables in rendering fonts, YMMV.
 
 ### Less annoying bell
+The default is certainly jarring when you are using code completion, and many people just disable it.  I like having an 
+audio cue, so I have included a brief and gentle sound.
 
 ### Sane default settings
 - Never close the window when you type "exit"
@@ -49,6 +51,7 @@ very readable.  Of course there are many variables in rendering fonts, YMMV.
 - SSH compression on
 - Warn if it's not AES
 
+Reference: http://dag.wiee.rs/blog/content/improving-putty-settings-on-windows
 
 ### Terminal-type string
 Maybe: PuTTY defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color" 
