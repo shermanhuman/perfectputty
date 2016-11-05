@@ -14,7 +14,7 @@ I've put together some resources to change the defaults to what I consider sane 
 
 ## Features
 
-### Sweet color settings
+### Sweetened color settings
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
 goals:
 
