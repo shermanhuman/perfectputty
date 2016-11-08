@@ -12,7 +12,7 @@ I've put together some resources to change the defaults to what I consider sane 
 
 ## Features
 
-### perfect16 - 21 super sweet colors for Putty
+### perfect16 - 16 super sweet colors for Putty
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
 goals:
 
