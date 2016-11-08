@@ -12,7 +12,7 @@ I've put together some resources to change the defaults to what I consider sane 
 
 ## Features
 
-### sweet16 - A super sweet 16 color Putty theme
+### perfect16 - A super sweet 16 color Putty theme
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
 goals:
 
