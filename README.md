@@ -1,7 +1,7 @@
 # perfectputty
 PuTTY comes with a number of really ugly default settings. These settings date back to 1998 and may not be ideal if you're connecting to a modern linux terminal server.  You'll want to change them.
 
-Editing your settings as you go can be painful as all settings are edited on a session by session basis.  In order to edit your existing sessions en masse will have to resort to exporting a .reg file, editing and re-importing.  That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
+Editing your settings as you go can be painful as all settings are edited on a session by session basis.  In order to edit existing sessions en masse you will have to resort to exporting a .reg file, editing and re-importing.  That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
 
 I've put together some resources to change the defaults to what I consider sane and beautiful settings.
 
@@ -12,7 +12,7 @@ I've put together some resources to change the defaults to what I consider sane 
 
 ## Features
 
-### perfect16 - A super sweet 16 color Putty theme
+### perfect16 - 21 super sweet colors for Putty
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
 goals:
 
@@ -22,8 +22,7 @@ goals:
 - No invisible output!  The stock PuTTY color scheme makes it hard to see output in some cases, and impossible in others.
 - Clarity, comfort and contrast. 
 
-### Screenshots
-Coming soon.
+![version2-color](https://cloud.githubusercontent.com/assets/15676339/20086123/255acc82-a52b-11e6-8fae-41db88fc101e.PNG)
 
 ### Deja Vu: a mature console font
 Aside from my subjective preference, font selection criteria:
@@ -34,6 +33,8 @@ Aside from my subjective preference, font selection criteria:
 - [Unicode range 25 line drawing support](http://www.alanflavell.org.uk/unicode/unidata25.html) 
 
 [Deja Vu Mono](http://dejavu-fonts.org) renders nicely at 12pts on 1920x1080 native resolution LCDs.  It's slightly large for my taste, but it also has a very full unicode support and is actively developed and supported.
+
+![version2-ascii](https://cloud.githubusercontent.com/assets/15676339/20086121/2462a412-a52b-11e6-8aa0-3d388849b102.PNG)
 
 Inconsolata is very nice, but at 12 pts I noticed some thin lines and scraggly rendering.  It's also missing the ANSI line drawing and ANSI art glyphs used in some linux console utilities.  
 
