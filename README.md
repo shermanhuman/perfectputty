@@ -24,6 +24,8 @@ goals:
 
 ![version2-color](https://cloud.githubusercontent.com/assets/15676339/20086123/255acc82-a52b-11e6-8fae-41db88fc101e.PNG)
 
+![version2-fun](https://cloud.githubusercontent.com/assets/15676339/20086277/45607f26-a52c-11e6-81ab-70da91149281.PNG)
+
 ### Deja Vu: a mature console font
 Aside from my subjective preference, font selection criteria:
 
