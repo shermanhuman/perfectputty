@@ -1,37 +1,55 @@
 # perfectputty
-PuTTY comes with a number of really ugly default settings, and all settings are edited on a session by session basis. 
-If you want to edit your existing sessions en masse will have to resort to exporting a .reg file, editing and re-importing.  
-That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
+PuTTY comes with a number of really ugly default settings. These settings date back to 1998 and may not be ideal if you're connecting to a modern linux terminal server.  You'll want to change them.
+
+Editing your settings as you go can be painful as all settings are edited on a session by session basis.  In order to edit your existing sessions en masse will have to resort to exporting a .reg file, editing and re-importing.  That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
 
 I've put together some resources to change the defaults to what I consider sane and beautiful settings.
 
 ## Install
-
 - Look over 'default-settings.reg' and then merge it into your registry.
-- Install the font.  Make sure PuTTY is configured to use it.
-- Put the pop.wav somewhere you can live and point the default bell there.
-
+- Install the font.  Make sure the PuTTY default config uses it.
+- Put the pop.wav somewhere you can live with and point the default bell there.
 
 ## Features
 
-### Sweetened color settings
+### sweet16 - A super sweet 16 color Putty theme
 I started with [jellybeans](https://github.com/nanotech/jellybeans.vim) and made modifications with the following
 goals:
 
+- 16 color term for the default, 256 color schemes should probably be handled server side
+- Dark background, just like your favorite IDE
 - Colors should stay true to their ANSI description, ANSI RED should be somewhat red.
 - No invisible output!  The stock PuTTY color scheme makes it hard to see output in some cases, and impossible in others.
-- Clarity and contrast. 
+- Clarity, comfort and contrast. 
 
 ### Screenshots
-![puttycolors-3](https://cloud.githubusercontent.com/assets/15676339/20016153/9b67ea84-a27b-11e6-8baf-09ddd03660f9.PNG)
-![puttycolors](https://cloud.githubusercontent.com/assets/15676339/20016156/9b72a280-a27b-11e6-8d39-a2b854f461e0.PNG)
-![puttycolors-2](https://cloud.githubusercontent.com/assets/15676339/20016154/9b6e22e6-a27b-11e6-9167-24cfd2148ce4.PNG)
-![puttycolors-4](https://cloud.githubusercontent.com/assets/15676339/20016339/3f34440a-a27c-11e6-843d-2b14e079ec11.PNG)
+Coming soon.
 
-### Inconsolata: the perfect console font 
-I evaluated 'consolas', 'anonymous pro', 'lucida console' and 'source code pro'.  Anonymous didn't feel dense
-enough for console and the others had various defects in rendering.  Inconsolata rendered perfectly and is 
-very readable.  Of course there are many variables in rendering fonts, YMMV.
+### Deja Vu: a mature console font
+Aside from my subjective preference, font selection criteria:
+
+- Readability against dark background
+- Render quality at smaller sizes  (pt size isn't a criteria)
+- Render quality on PuTTY
+- [Unicode range 25 line drawing support](http://www.alanflavell.org.uk/unicode/unidata25.html) 
+
+[Deja Vu Mono](http://dejavu-fonts.org) renders nicely at 12pts on 1920x1080 native resolution LCDs.  It's slightly large for my taste, but it also has a very full unicode support and is actively developed and supported.
+
+Inconsolata is very nice, but at 12 pts I noticed some thin lines and scraggly rendering.  It's also missing the ANSI line drawing and ANSI art glyphs used in some linux console utilities.  
+
+If you really want to us it I've included 'inconsolata-fallback.reg' to attempt to set the 'Consolas' font as a fallback to 'Inconsolata'.  The procedure [is described here](https://msdn.microsoft.com/en-US/globalization/mt662331), and consists of editing the registry key:
+
+    HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink
+
+**Right now this isn't working correctly.**  The font does fall back and display the missing unicode characters, but it's not using Consolas.  Apparently just having an entry is enough to get it to fall back to whatever the default font is.  Much of the Windows Font subsystem is "there be dragons" kind of stuff dating back to Windows 3.11.  To quote the MSDN article: 
+
+    "Editing/modifying the font link entries in the Registry can be done, but is NOT supported by Microsoft. The wrong font link entry can leave the system unstable and impacts machine performance."
+
+Finally I wanted to mention [Input](http://input.fontbureau.com/).  This is a font that pays attention to the things you really want to see in a console/code font.  Aesthetically: I can dig it.  It has good support for Unicode line drawing but it's incomplete.  However it has a less liberal license and I can't distribute it here.  Here's a link to download:
+
+http://input.fontbureau.com/download/
+
+Of course there are many variables in rendering fonts, YMMV.
 
 ### Less annoying bell
 The default is certainly jarring when you are using code completion, and many people just disable it.  I like having an 
@@ -51,9 +69,6 @@ audio cue, so I have included a brief and gentle sound.
 - null packet keepalives every 60 seconds
 - SSH compression on
 - Warn if it's not AES
+- Terminal type string set to "putty"
 
 Reference: http://dag.wiee.rs/blog/content/improving-putty-settings-on-windows
-
-### Terminal-type string
-Maybe: PuTTY defaults to the "xterm" string, which some Linuxes limit to 16 colors.  Could change it to "xterm-256color"
-or "putty-256color" for more terminal colors, but it breaks our simple color scheme.
