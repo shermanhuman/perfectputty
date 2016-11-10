@@ -1,7 +1,7 @@
 # perfectputty
 PuTTY comes with a number of really ugly default settings. These settings date back to 1998 and may not be ideal if you're connecting to a modern linux terminal server.  You'll want to change them.
 
-Editing your settings as you go can be painful as all settings are edited on a session by session basis.  In order to edit existing sessions en masse you will have to resort to exporting a .reg file, editing and re-importing.  That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
+Editing your settings as you go can be painful: all settings are edited on a session by session basis.  In order to edit existing sessions en masse you will have to resort to exporting a .reg file, editing and re-importing.  That's why it's so important to get your settings PERFECT before you even begin using PuTTY.
 
 I've put together some resources to change the defaults to what I consider sane and beautiful settings.
 
