@@ -40,7 +40,7 @@ Aside from my subjective preference, font selection criteria:
 
 Inconsolata is very nice, but at 12 pts I noticed some thin lines and scraggly rendering.  It's also missing the ANSI line drawing and ANSI art glyphs used in some linux console utilities.  
 
-If you really want to us it I've included 'inconsolata-fallback.reg' to attempt to set the 'Consolas' font as a fallback to 'Inconsolata'.  The procedure [is described here](https://msdn.microsoft.com/en-US/globalization/mt662331), and consists of editing the registry key:
+If you really want to use it I've included 'inconsolata-fallback.reg' to attempt to set the 'Consolas' font as a fallback to 'Inconsolata'.  The procedure [is described here](https://msdn.microsoft.com/en-US/globalization/mt662331), and consists of editing the registry key:
 
     HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink
 
