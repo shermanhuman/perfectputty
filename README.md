@@ -36,6 +36,8 @@ Aside from my subjective preference, font selection criteria:
 
 [Deja Vu Mono](http://dejavu-fonts.org) renders nicely at 12pts on 1920x1080 native resolution LCDs.  It's slightly large for my taste, but it also has a very full unicode support and is actively developed and supported.
 
+You might want to consider this Deja Vu Mono fork: [Hack](https://sourcefoundry.org/hack/).
+
 ![version2-ascii](https://cloud.githubusercontent.com/assets/15676339/20086121/2462a412-a52b-11e6-8aa0-3d388849b102.PNG)
 
 Inconsolata is very nice, but at 12 pts I noticed some thin lines and scraggly rendering.  It's also missing the ANSI line drawing and ANSI art glyphs used in some linux console utilities.  
@@ -75,3 +77,39 @@ audio cue, so I have included a brief and gentle sound.
 - Terminal type string set to "putty"
 
 Reference: http://dag.wiee.rs/blog/content/improving-putty-settings-on-windows
+
+# Windows 11 and Windows Terminal Support
+For Windows 11 users, I've extended support to Windows Terminal.
+
+
+
+## Installation for Windows Terminal
+1. Navigate to the `win11` folder in this repository.
+2. Run the `Install-wt-color-scheme.ps1` script in PowerShell:
+   ```
+   .\Install-wt-color-scheme.ps1
+   ```
+3. Follow the prompts to install the "Perfect" color scheme and apply it to your desired profiles.
+
+This script does the following:
+- Locates your Windows Terminal settings file
+- Adds the "Perfect" color scheme to your available schemes
+- Allows you to apply the scheme to one, multiple, or all profiles
+
+### Testing the Color Scheme
+After installation, you can test the color scheme using the provided `ColorTest.ps1` script:
+1. Navigate to the `win11\tests` folder.
+2. Run the script:
+   ```
+   .\ColorTest.ps1
+   ```
+This will display a comprehensive color test, showing how different colors render in your terminal.
+
+## PowerShell Profile
+I've also included a bonus PowerShell profile (`Microsoft.PowerShell_profile.ps1`) that enhances your command-line fun:
+- Sets up a custom prompt with git integration
+- Uses the "Perfect" color scheme 
+
+To install the PowerShell profile:
+1. Copy `Microsoft.PowerShell_profile.ps1` to your PowerShell profile location (typically `$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`) or edit it from the command line `notepad $PROFILE` in the shell you want to edit.
+2. Restart PowerShell or run `. $PROFILE` to load the new profile.
