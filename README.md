@@ -79,9 +79,9 @@ audio cue, so I have included a brief and gentle sound.
 Reference: http://dag.wiee.rs/blog/content/improving-putty-settings-on-windows
 
 # Windows 11 and Windows Terminal Support
-For Windows 11 users, I've extended support to Windows Terminal.
+For Windows 11 users, I've added a Windows Terminal color scheme.  As a bonus I've added a profile script with git support:
 
-
+![windows11-powershell](https://github.com/user-attachments/assets/21a10b49-0637-4f2f-a1cc-20595e3e93fd)
 
 ## Installation for Windows Terminal
 1. Navigate to the `win11` folder in this repository.
