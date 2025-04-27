@@ -1,13 +1,18 @@
 # Miniconda initialization
-$condaPath = "$env:USERPROFILE\miniconda3\Scripts\conda.exe"
+$condaPath = "C:\ProgramData\anaconda3\Scripts\conda.exe"
 if (Test-Path $condaPath) {
-    (& $condaPath "shell.powershell" "hook") | Out-String | Invoke-Expression
+    Write-Host "... " -ForegroundColor Green -NoNewline
+    & $condaPath "shell.powershell" "hook" | Out-Null
+    $pythonVersion = (python --version) -replace "Python ", ""
+    Write-Host "Miniconda loaded: Python $pythonVersion" -ForegroundColor Green
 }
 
 # FNM Node.js initialization
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    Write-Host "... " -ForegroundColor Magenta -NoNewline
     fnm env --use-on-cd | Out-String | Invoke-Expression
-    fnm use default
+    $nodeVersion = (node --version) -replace "v", ""
+    Write-Host "fnm loaded: Node $nodeVersion" -ForegroundColor Magenta
 }
 
 # Command Line Colors and Git Support
@@ -49,10 +54,14 @@ function prompt {
         $gitInfo += $colors.Reset
     }
     
+    # Check if running as admin
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $promptEmoji = if ($isAdmin) { "🔥" } else { "✨" }
+    
     # Build the prompt
     $hostname = [System.Net.Dns]::GetHostName()
     $promptString = @(
-        "✨ $($colors.Bold)$($colors.PaleYellow)$hostname$($colors.Reset)"
+        "$promptEmoji $($colors.Bold)$($colors.PaleYellow)$hostname$($colors.Reset)"
         "$($colors.Bold)$($colors.PaleHotPink)$curPath$($colors.Reset)"
     )
     
