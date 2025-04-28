@@ -19,14 +19,24 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 
 ```powershell
 # Run in PowerShell as Administrator
-iwr -useb https://raw.githubusercontent.com/username/perfectputty/install.ps1 | iex
+# For remote installation (after pushing to GitHub):
+# iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/install.ps1 | iex
+
+# For local installation:
+cd path\to\perfectputty
+.\install.ps1
 ```
 
 ### macOS/Linux
 
 ```bash
 # Run in Terminal
-curl -fsSL https://raw.githubusercontent.com/username/perfectputty/install.sh | bash
+# For remote installation (after pushing to GitHub):
+# curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/install.sh | bash
+
+# For local installation:
+cd path/to/perfectputty
+bash ./install.sh
 ```
 
 ## What Gets Installed

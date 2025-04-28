@@ -1,17 +1,32 @@
 # Common installer functions
 
+# Check if PowerShell-YAML module is installed
+if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
+  Write-Host "Installing PowerShell-YAML module..." -ForegroundColor Cyan
+  Install-Module -Name powershell-yaml -Scope CurrentUser -Force
+}
+
+# Import the module
+Import-Module powershell-yaml
+
 function Create-DefaultConfig {
   $configPath = Join-Path $PSScriptRoot ".." "user-config.yaml"
   
-  @"
-# Global user configuration
-colorScheme: Perfect16
-font:
-  family: SauceCodePro Nerd Font
-  size: 12
-terminal:
-  scrollback: 10000
-"@ | Set-Content -Path $configPath
+  $defaultConfig = @{
+    colorScheme = "Perfect16"
+    font = @{
+      family = "SauceCodePro Nerd Font"
+      size = 12
+    }
+    terminal = @{
+      scrollback = 10000
+    }
+  }
+  
+  # Convert to YAML and save
+  $yamlContent = ConvertTo-Yaml $defaultConfig
+  $yamlContent = "# Global user configuration`n" + $yamlContent
+  Set-Content -Path $configPath -Value $yamlContent
   
   Write-Host "Created default user configuration at $configPath" -ForegroundColor Green
 }
@@ -27,7 +42,8 @@ function Scan-Addons {
   Get-ChildItem -Path $addonsDir -Directory | ForEach-Object {
     $configPath = Join-Path $_.FullName "config.yaml"
     if (Test-Path $configPath) {
-      $config = Get-Content $configPath -Raw | ConvertFrom-Yaml
+      $yamlContent = Get-Content $configPath -Raw
+      $config = ConvertFrom-Yaml $yamlContent
       $addons += @{
         Name = $config.name
         Description = $config.description

@@ -1,6 +1,28 @@
 #!/bin/bash
 # Common installer functions for Unix-like systems
 
+# Function to parse YAML files
+function parse_yaml() {
+  local yaml_file=$1
+  local prefix=$2
+  local s
+  s='[[:space:]]*'
+  w='[a-zA-Z0-9_]*'
+  fs=$(echo @|tr @ '\034')
+  
+  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yaml_file" |
+  awk -F$fs '{
+    indent = length($1)/2;
+    vname[indent] = $2;
+    for (i in vname) {if (i > indent) {delete vname[i]}}
+    if (length($3) > 0) {
+      vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+      printf("%s%s%s=\"%s\"\n", "'"$prefix"'",vn,$2,$3);
+    }
+  }'
+}
+
 function create_default_config() {
   local config_path="$(dirname "$0")/../user-config.yaml"
   
@@ -32,9 +54,19 @@ function scan_addons() {
     if [ -d "$addon_dir" ]; then
       local config_path="$addon_dir/config.yaml"
       if [ -f "$config_path" ]; then
-        local name=$(grep "^name:" "$config_path" | cut -d ":" -f2- | xargs)
-        local description=$(grep "^description:" "$config_path" | cut -d ":" -f2- | xargs)
-        local platforms=$(grep -A10 "^platforms:" "$config_path" | grep -v "^platforms:" | grep "^  -" | cut -d "-" -f2- | xargs)
+        # Parse YAML file
+        local prefix="config_"
+        eval $(parse_yaml "$config_path" "$prefix")
+        
+        # Get values from parsed YAML
+        local name="${config_name}"
+        local description="${config_description}"
+        
+        # Handle platforms array
+        local platforms=""
+        for platform in $(grep -A10 "^platforms:" "$config_path" | grep -v "^platforms:" | grep "^  -" | cut -d "-" -f2- | xargs); do
+          platforms="$platforms $platform"
+        done
         
         ADDONS+=("$addon_dir")
         ADDON_NAMES+=("$name")
