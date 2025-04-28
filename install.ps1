@@ -1,20 +1,6 @@
 # Perfect Environment Installer for Windows
 # This script installs the Perfect environment configuration for Windows
 
-# Determine if running remotely or locally
-$isRemote = $MyInvocation.MyCommand.Path -eq ""
-$repoUrl = "https://raw.githubusercontent.com/shermanhuman/perfectputty/master"
-
-# Set base directory
-if ($isRemote) {
-    $baseDir = "$env:TEMP\perfectputty_install"
-    if (-not (Test-Path $baseDir)) {
-        New-Item -ItemType Directory -Path $baseDir -Force | Out-Null
-    }
-} else {
-    $baseDir = $PSScriptRoot
-}
-
 # Check if running as administrator
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
   Write-Warning "Please run as administrator for full functionality!"
@@ -23,38 +9,6 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
   }
 }
-
-# Function to download a file if running remotely
-function Get-RemoteFile {
-    param (
-        [string]$RelativePath,
-        [string]$OutputPath
-    )
-    
-    if ($isRemote) {
-        $url = "$repoUrl/$RelativePath"
-        Write-Host "Downloading $url..." -ForegroundColor Cyan
-        Invoke-WebRequest -Uri $url -OutFile $OutputPath
-    }
-}
-
-# Create necessary directories
-if ($isRemote) {
-    New-Item -ItemType Directory -Path "$baseDir\installers" -Force | Out-Null
-}
-
-# Download or source common and Windows-specific functions
-$commonPath = "$baseDir\installers\common.ps1"
-$windowsPath = "$baseDir\installers\windows.ps1"
-
-if ($isRemote) {
-    Get-RemoteFile -RelativePath "installers/common.ps1" -OutputPath $commonPath
-    Get-RemoteFile -RelativePath "installers/windows.ps1" -OutputPath $windowsPath
-}
-
-# Source the modules
-. $commonPath
-. $windowsPath
 
 # Check if PowerShell-YAML module is installed
 if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
@@ -65,43 +19,117 @@ if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
 # Import the module
 Import-Module powershell-yaml
 
-# Create default user-config.yaml if it doesn't exist
-$configPath = "$baseDir\user-config.yaml"
-if (-not (Test-Path $configPath)) {
-    $defaultConfig = @{
-        colorScheme = "Perfect16"
-        font = @{
-            family = "SauceCodePro Nerd Font"
-            size = 12
-        }
-        terminal = @{
-            scrollback = 10000
-        }
+# Create default user-config.yaml
+$configPath = "$env:TEMP\user-config.yaml"
+$defaultConfig = @{
+    colorScheme = "Perfect16"
+    font = @{
+        family = "SauceCodePro Nerd Font"
+        size = 12
     }
-    
-    # Convert to YAML and save
-    $yamlContent = ConvertTo-Yaml $defaultConfig
-    $yamlContent = "# Global user configuration`n" + $yamlContent
-    Set-Content -Path $configPath -Value $yamlContent
-    
-    Write-Host "Created default user configuration at $configPath" -ForegroundColor Green
+    terminal = @{
+        scrollback = 10000
+    }
 }
+
+# Convert to YAML and save
+$yamlContent = ConvertTo-Yaml $defaultConfig
+$yamlContent = "# Global user configuration`n" + $yamlContent
+Set-Content -Path $configPath -Value $yamlContent
+
+Write-Host "Created default user configuration at $configPath" -ForegroundColor Green
 
 # Install core components
 Write-Host "Installing core components..." -ForegroundColor Cyan
 
-# Download core files if running remotely
-if ($isRemote) {
-    New-Item -ItemType Directory -Path "$baseDir\core\profiles" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$baseDir\core\terminal" -Force | Out-Null
-    New-Item -ItemType Directory -Path "$baseDir\core\colors" -Force | Out-Null
-    
-    Get-RemoteFile -RelativePath "core/profiles/powershell.ps1" -OutputPath "$baseDir\core\profiles\powershell.ps1"
-    Get-RemoteFile -RelativePath "core/terminal/windows.json" -OutputPath "$baseDir\core\terminal\windows.json"
-    Get-RemoteFile -RelativePath "core/colors/perfect16.yaml" -OutputPath "$baseDir\core\colors\perfect16.yaml"
+# PowerShell profile content
+$profileContent = @"
+# Miniconda initialization
+`$condaPath = "C:\ProgramData\anaconda3\Scripts\conda.exe"
+if (Test-Path `$condaPath) {
+    Write-Host "... " -ForegroundColor Green -NoNewline
+    & `$condaPath "shell.powershell" "hook" | Out-Null
+    `$pythonVersion = (python --version) -replace "Python ", ""
+    Write-Host "Miniconda loaded: Python `$pythonVersion" -ForegroundColor Green
 }
 
-# Install shell profile
+# FNM Node.js initialization
+if (Get-Command fnm -ErrorAction SilentlyContinue) {
+    Write-Host "... " -ForegroundColor Magenta -NoNewline
+    fnm env --use-on-cd | Out-String | Invoke-Expression
+    `$nodeVersion = (node --version) -replace "v", ""
+    Write-Host "fnm loaded: Node `$nodeVersion" -ForegroundColor Magenta
+}
+
+# Command Line Colors and Git Support
+if (-not (Get-Module -ListAvailable -Name posh-git)) {
+    Install-Module posh-git -Scope CurrentUser -Force
+}
+Import-Module posh-git
+
+function prompt {
+    `$origLastExitCode = `$LASTEXITCODE
+    
+    # ANSI color codes
+    `$colors = @{
+        PaleYellow = "`e[38;5;223m"
+        PaleHotPink = "`e[38;5;218m"
+        PaleBrightGreen = "`e[38;5;156m"
+        VeryPaleGreen = "`e[38;5;194m"  # New color: even paler and whiter green
+        PalePurple = "`e[38;5;183m"
+        Reset = "`e[0m"
+        Bold = "`e[1m"
+    }
+    
+    # Get current path
+    `$curPath = `$ExecutionContext.SessionState.Path.CurrentLocation.Path
+    if (`$curPath.ToLower().StartsWith(`$Home.ToLower())) {
+        `$curPath = "~" + `$curPath.SubString(`$Home.Length)
+    }
+    
+    # Get Git information
+    `$gitStatus = Get-GitStatus
+    `$gitInfo = ""
+    if (`$gitStatus) {
+        `$branchName = `$gitStatus.Branch
+        `$gitInfo = " `$(`$colors.PalePurple)git:(`$(`$colors.PaleYellow)`$branchName`$(`$colors.PalePurple))"
+        if (`$gitStatus.Working.Count -gt 0) { `$gitInfo += "+`$(`$gitStatus.Working.Count)" }
+        if (`$gitStatus.Untracked.Count -gt 0) { `$gitInfo += "?" }
+        if (`$gitStatus.AheadBy -gt 0) { `$gitInfo += "↑`$(`$gitStatus.AheadBy)" }
+        if (`$gitStatus.BehindBy -gt 0) { `$gitInfo += "↓`$(`$gitStatus.BehindBy)" }
+        `$gitInfo += `$colors.Reset
+    }
+    
+    # Check if running as admin
+    `$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    `$promptEmoji = if (`$isAdmin) { "🔥" } else { "✨" }
+    
+    # Build the prompt
+    `$hostname = [System.Net.Dns]::GetHostName()
+    `$promptString = @(
+        "`$promptEmoji `$(`$colors.Bold)`$(`$colors.PaleYellow)`$hostname`$(`$colors.Reset)"
+        "`$(`$colors.Bold)`$(`$colors.PaleHotPink)`$curPath`$(`$colors.Reset)"
+    )
+    
+    # Add Conda environment information
+    if (`$env:CONDA_DEFAULT_ENV -and `$env:CONDA_DEFAULT_ENV -ne "base") {
+        `$promptString += "`$(`$colors.VeryPaleGreen)🐍`$(`$colors.PaleBrightGreen):[`$(`$colors.VeryPaleGreen)`$env:CONDA_DEFAULT_ENV`$(`$colors.PaleBrightGreen)]`$(`$colors.Reset)"
+    }
+    
+    # Add Git information
+    if (`$gitStatus) {
+        `$promptString += `$gitInfo
+    }
+    
+    # Output the prompt
+    Write-Host (`$promptString -join " ")
+    
+    `$LASTEXITCODE = `$origLastExitCode
+    return "`$(`$colors.Bold)❯`$(`$colors.Reset) "
+}
+"@
+
+# Install PowerShell profile
 $profileDir = Split-Path $PROFILE
 $profilePath = $PROFILE
 
@@ -110,54 +138,67 @@ if (-not (Test-Path $profileDir)) {
     New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
 }
 
-# Read profile template
-$profileTemplate = Get-Content "$baseDir\core\profiles\powershell.ps1" -Raw -ErrorAction SilentlyContinue
-if ($profileTemplate) {
-    # Write to profile
-    Set-Content -Path $profilePath -Value $profileTemplate
-    Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor Green
-} else {
-    Write-Host "PowerShell profile template not found" -ForegroundColor Red
+# Write profile
+Set-Content -Path $profilePath -Value $profileContent
+Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor Green
+
+# Windows Terminal color scheme
+$colorScheme = @{
+    name = "Perfect"
+    background = "#0F1011"
+    foreground = "#C3C3C3"
+    cursorColor = "#D5DDd2"
+    selectionBackground = "#121212"
+    black = "#444448"
+    blue = "#66728e"
+    cyan = "#6F99A6"
+    green = "#799D6A"
+    purple = "#AF87AE"
+    red = "#B94D35"
+    white = "#DDDDDD"
+    yellow = "#FFB964"
+    brightBlack = "#554F4F"
+    brightBlue = "#82A3BF"
+    brightCyan = "#91CADB"
+    brightGreen = "#7CB165"
+    brightPurple = "#EABBe9"
+    brightRed = "#D65F45"
+    brightWhite = "#EFEFE0"
+    brightYellow = "#FAD07A"
 }
 
-# Install terminal config
+# Install Windows Terminal color scheme
 Write-Host "Installing Windows Terminal configuration..." -ForegroundColor Cyan
-$wtConfigPath = "$baseDir\core\terminal\windows.json"
-if (Test-Path $wtConfigPath) {
-    $wtSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
-    $wtPreviewSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+$wtSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+$wtPreviewSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+
+$settingsPath = ""
+if (Test-Path $wtSettings) {
+    $settingsPath = $wtSettings
+} elseif (Test-Path $wtPreviewSettings) {
+    $settingsPath = $wtPreviewSettings
+}
+
+if ($settingsPath) {
+    $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
     
-    $settingsPath = ""
-    if (Test-Path $wtSettings) {
-        $settingsPath = $wtSettings
-    } elseif (Test-Path $wtPreviewSettings) {
-        $settingsPath = $wtPreviewSettings
+    # Check if the schemes array exists, if not, create it
+    if (-not $settings.schemes) {
+        $settings | Add-Member -Type NoteProperty -Name schemes -Value @()
     }
     
-    if ($settingsPath) {
-        $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
-        $colorScheme = Get-Content $wtConfigPath -Raw | ConvertFrom-Json
-        
-        # Check if the schemes array exists, if not, create it
-        if (-not $settings.schemes) {
-            $settings | Add-Member -Type NoteProperty -Name schemes -Value @()
-        }
-        
-        # Remove existing scheme with the same name if it exists
-        $settings.schemes = $settings.schemes | Where-Object { $_.name -ne $colorScheme.name }
-        
-        # Add the new color scheme
-        $settings.schemes += $colorScheme
-        
-        # Save the updated settings
-        $settings | ConvertTo-Json -Depth 32 | Set-Content $settingsPath
-        
-        Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor Green
-    } else {
-        Write-Host "Windows Terminal settings file not found" -ForegroundColor Yellow
-    }
+    # Remove existing scheme with the same name if it exists
+    $settings.schemes = $settings.schemes | Where-Object { $_.name -ne $colorScheme.name }
+    
+    # Add the new color scheme
+    $settings.schemes += $colorScheme
+    
+    # Save the updated settings
+    $settings | ConvertTo-Json -Depth 32 | Set-Content $settingsPath
+    
+    Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor Green
 } else {
-    Write-Host "Windows Terminal configuration not found" -ForegroundColor Red
+    Write-Host "Windows Terminal settings file not found" -ForegroundColor Yellow
 }
 
 # Install fonts
@@ -188,11 +229,6 @@ if ($installFonts -eq "y") {
     Remove-Item -Path $fontDir -Recurse -Force
     
     Write-Host "Fonts installed successfully!" -ForegroundColor Green
-}
-
-# Clean up if running remotely
-if ($isRemote -and (Test-Path $baseDir)) {
-    Remove-Item -Path $baseDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "Installation complete!" -ForegroundColor Green
