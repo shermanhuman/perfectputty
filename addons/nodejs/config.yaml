@@ -1,0 +1,6 @@
+name: Node.js
+description: JavaScript runtime environment with fnm version manager
+platforms:
+  - windows
+  - macos
+  - linux

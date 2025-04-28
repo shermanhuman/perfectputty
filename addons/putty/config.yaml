@@ -1,0 +1,4 @@
+name: PuTTY
+description: SSH and telnet client with custom configuration
+platforms:
+  - windows
