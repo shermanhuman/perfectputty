@@ -10,37 +10,11 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 
 - **Cross-Platform**: Works on Windows 11, macOS, and Linux
 - **Unified Configuration**: Shared color schemes, fonts, and settings across platforms
-- **Modular Add-ons**: Optional components like PuTTY, Miniconda, and Node.js
+- **Modular Add-ons**: Optional components like PuTTY, uv, and Node.js
 - **Simple Installation**: One-line installation command
-- **Safe Configuration**: Automatic backups of existing settings before modifications
-- **Robust Installation**: Reliable download and installation process
-
-## Safety Features
-
-Perfect Environment prioritizes the safety of your existing configuration:
-
-- **Automatic Backups**: Before modifying any configuration file, the installer creates a backup
-- **Timestamped Files**: All backups include timestamps in the filename for easy identification
-- **Central Storage**: Backups are stored in a dedicated `PerfectPutty_Backups` directory in your home folder
+- **Safe Configuration**: Automatic backups of existing settings before modifications with timestamped files stored in a dedicated directory
+- **Robust Installation**: Reliable download and installation process with pre-download, progress tracking, retry logic, and automatic cleanup
 - **Error Recovery**: If an installation step fails, you'll be offered the option to restore from backup
-- **Platform-Specific Methods**: Uses appropriate backup methods for each platform:
-  - Windows: Registry exports, file copies
-  - macOS: plist exports, file copies
-  - Linux: dconf dumps, file copies
-
-This ensures that your existing terminal settings, shell profiles, and other configurations can be easily restored if needed.
-
-## Installation Safety Features
-
-Perfect Environment uses a robust installation process designed for reliability:
-
-- **Pre-Download**: All required files are downloaded before installation begins
-- **Progress Tracking**: Clear progress indicators show download status (current file / total files)
-- **File Information**: Shows file sizes during download
-- **Retry Logic**: Failed downloads are automatically retried with exponential backoff
-- **Error Handling**: Comprehensive error detection and reporting
-- **Temporary Storage**: Files are downloaded to a unique temporary directory
-- **Automatic Cleanup**: Temporary files are automatically removed after installation
 
 ## Installation
 
@@ -87,7 +61,7 @@ bash ./install.sh
 ### Optional Add-ons
 
 - **PuTTY** (Windows only): SSH and telnet client with custom configuration
-- **Miniconda**: Python distribution with package manager
+- **uv**: Python package installer and resolver from astral-sh/uv
 - **Node.js**: JavaScript runtime with fnm version manager
 - More add-ons can be easily created and added
 
@@ -111,19 +85,26 @@ terminal:
 perfectputty/
 ├── core/                      # Core components
 │   ├── colors/                # Color schemes
-│   ├── fonts/                 # Font files
 │   ├── profiles/              # Shell profiles
 │   ├── terminal/              # Terminal configurations
 │   └── sounds/                # Sound files
-├── installers/                # OS-specific installer modules
 ├── addons/                    # Modular add-ons
 │   ├── putty/                 # PuTTY configuration (Windows-only)
 │   ├── miniconda/             # Miniconda configuration
 │   └── nodejs/                # Node.js configuration
 ├── tests/                     # Tests
+│   ├── common/                # Common test files
+│   │   ├── ascii/             # ASCII art for tests
+│   │   ├── colortest.ps1      # PowerShell color test
+│   │   ├── colortest.sh       # Bash color test
+│   │   └── unicode-test.sh    # Unicode test
+│   ├── mac_os/                # macOS specific tests
+│   ├── run-tests.ps1          # Windows test runner
+│   └── run-tests.sh           # Unix test runner
 ├── install.sh                 # Unix installer script
 ├── install.ps1                # Windows installer script
-└── user-config.yaml           # User configuration file
+├── user-config.yaml           # User configuration file
+└── LICENSE                    # MIT License
 ```
 
 ## Add-ons
@@ -148,20 +129,6 @@ powershell tests/run-tests.ps1
 ```
 
 ## Troubleshooting
-
-### Windows Terminal Settings
-
-If you encounter issues with Windows Terminal settings after installation, a repair script is included:
-
-```powershell
-# Run in PowerShell
-.\fix-terminal-settings.ps1
-```
-
-This script:
-- Creates a backup of your current Windows Terminal settings
-- Fixes common issues with the settings.json file format
-- Restores from backup if the repair fails
 
 ### Restoring from Backups
 
@@ -198,3 +165,7 @@ defaults import com.apple.Terminal ~/PerfectPutty_Backups/Terminal_Settings_Back
 
 - [Nerd Fonts](https://www.nerdfonts.com/) - SauceCodePro Nerd Font
 - [Jellybeans](https://github.com/nanotech/jellybeans.vim) - Original inspiration for the color scheme
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
