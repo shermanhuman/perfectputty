@@ -1,7 +1,7 @@
 # Miniconda initialization
 $condaPath = "C:\ProgramData\anaconda3\Scripts\conda.exe"
 if (Test-Path $condaPath) {
-    Write-Host "... " -ForegroundColor Green -NoNewline
+    Write-Host "`u{e73c} " -ForegroundColor Green -NoNewline
     & $condaPath "shell.powershell" "hook" | Out-Null
     $pythonVersion = (python --version) -replace "Python ", ""
     Write-Host "Miniconda loaded: Python $pythonVersion" -ForegroundColor Green
@@ -9,7 +9,7 @@ if (Test-Path $condaPath) {
 
 # FNM Node.js initialization
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
-    Write-Host "... " -ForegroundColor Magenta -NoNewline
+    Write-Host "`u{e719} " -ForegroundColor Magenta -NoNewline
     fnm env --use-on-cd | Out-String | Invoke-Expression
     $nodeVersion = (node --version) -replace "v", ""
     Write-Host "fnm loaded: Node $nodeVersion" -ForegroundColor Magenta
@@ -46,7 +46,7 @@ function prompt {
     $gitInfo = ""
     if ($gitStatus) {
         $branchName = $gitStatus.Branch
-        $gitInfo = " $($colors.PalePurple)git:($($colors.PaleYellow)$branchName$($colors.PalePurple))"
+        $gitInfo = " $($colors.PalePurple)`u{eafc} ($($colors.PaleYellow)$branchName$($colors.PalePurple))"
         if ($gitStatus.Working.Count -gt 0) { $gitInfo += "+$($gitStatus.Working.Count)" }
         if ($gitStatus.Untracked.Count -gt 0) { $gitInfo += "?" }
         if ($gitStatus.AheadBy -gt 0) { $gitInfo += "↑$($gitStatus.AheadBy)" }
