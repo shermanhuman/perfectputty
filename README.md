@@ -13,6 +13,7 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 - **Modular Add-ons**: Optional components like PuTTY, Miniconda, and Node.js
 - **Simple Installation**: One-line installation command
 - **Safe Configuration**: Automatic backups of existing settings before modifications
+- **Robust Installation**: Reliable download and installation process
 
 ## Safety Features
 
@@ -28,6 +29,18 @@ Perfect Environment prioritizes the safety of your existing configuration:
   - Linux: dconf dumps, file copies
 
 This ensures that your existing terminal settings, shell profiles, and other configurations can be easily restored if needed.
+
+## Installation Safety Features
+
+Perfect Environment uses a robust installation process designed for reliability:
+
+- **Pre-Download**: All required files are downloaded before installation begins
+- **Progress Tracking**: Clear progress indicators show download status (current file / total files)
+- **File Information**: Shows file sizes during download
+- **Retry Logic**: Failed downloads are automatically retried with exponential backoff
+- **Error Handling**: Comprehensive error detection and reporting
+- **Temporary Storage**: Files are downloaded to a unique temporary directory
+- **Automatic Cleanup**: Temporary files are automatically removed after installation
 
 ## Installation
 
