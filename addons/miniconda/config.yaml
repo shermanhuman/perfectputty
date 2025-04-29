@@ -1,6 +1,0 @@
-name: Miniconda
-description: Python distribution with package manager
-platforms:
-  - windows
-  - macos
-  - linux

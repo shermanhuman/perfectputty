@@ -33,8 +33,8 @@ $filesToDownload = @(
     "addons/putty/config.yaml",
     "addons/putty/windows.ps1",
     "addons/putty/putty-settings.reg",
-    "addons/miniconda/config.yaml",
-    "addons/miniconda/windows.ps1",
+    "addons/python/config.yaml",
+    "addons/python/windows.ps1",
     "addons/nodejs/config.yaml",
     "addons/nodejs/windows.ps1"
 )

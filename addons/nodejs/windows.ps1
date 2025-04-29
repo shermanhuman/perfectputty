@@ -39,11 +39,47 @@ function Install-NodeJS {
   $profileContent = @"
 # fnm Node.js initialization
 if (Get-Command fnm -ErrorAction SilentlyContinue) {
-    Write-Host "... " -ForegroundColor Magenta -NoNewline
+    Write-Host "`u{e719} " -ForegroundColor Magenta -NoNewline
+    
+    # Enable automatic version switching when entering directories
     fnm env --use-on-cd | Out-String | Invoke-Expression
-    `$nodeVersion = (node --version) -replace "v", ""
-    Write-Host "fnm loaded: Node `$nodeVersion" -ForegroundColor Magenta
+    
+    # Check for .node-version or .nvmrc file in current directory
+    `$nodeVersionFile = if (Test-Path ".node-version") { ".node-version" } elseif (Test-Path ".nvmrc") { ".nvmrc" } else { `$null }
+    
+    if (`$nodeVersionFile) {
+        `$requestedVersion = Get-Content `$nodeVersionFile -Raw
+        fnm use `$requestedVersion.Trim() 2>&1 | Out-Null
+    }
+    
+    `$nodeVersion = (node --version 2>`$null) -replace "v", ""
+    Write-Host "Node `$nodeVersion" -ForegroundColor Magenta
 }
+
+# Add Node.js environment information to the prompt
+function Add-NodeJsEnvironmentToPrompt {
+    param (
+        [Parameter(Mandatory=`$true)]
+        [System.Collections.ArrayList]`$PromptString,
+        
+        [Parameter(Mandatory=`$true)]
+        [hashtable]`$Colors
+    )
+    
+    if (Get-Command fnm -ErrorAction SilentlyContinue) {
+        `$nodeVersion = (node --version 2>`$null) -replace "v", ""
+        if (`$nodeVersion) {
+            `$PromptString += "`$(`$Colors.PalePurple)`u{e719}`$(`$Colors.PaleBrightGreen):[`$(`$Colors.PalePurple)`$nodeVersion`$(`$Colors.PaleBrightGreen)]`$(`$Colors.Reset)"
+        }
+    }
+    
+    return `$PromptString
+}
+
+# Hook into the prompt function
+`$oldPrompt = Get-Content function:prompt
+`$newPrompt = `$oldPrompt.ToString() -replace '# Node.js environment information will be added by the Node.js add-on if installed', '`$promptString = Add-NodeJsEnvironmentToPrompt -PromptString `$promptString -Colors `$colors'
+Set-Item -Path function:prompt -Value ([ScriptBlock]::Create(`$newPrompt))
 "@
   
   # Check if the profile already contains fnm initialization

@@ -1,0 +1,6 @@
+name: Python
+description: Python environment with uv package manager
+platforms:
+  - windows
+  - macos
+  - linux

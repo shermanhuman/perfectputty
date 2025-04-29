@@ -54,9 +54,9 @@ FILE_MANIFEST=(
   "core/sounds/pop.wav"
   
   # Add-on files
-  "addons/miniconda/config.yaml"
-  "addons/miniconda/macos.sh"
-  "addons/miniconda/linux.sh"
+  "addons/python/config.yaml"
+  "addons/python/macos.sh"
+  "addons/python/linux.sh"
   "addons/nodejs/config.yaml"
   "addons/nodejs/macos.sh"
   "addons/nodejs/linux.sh"
