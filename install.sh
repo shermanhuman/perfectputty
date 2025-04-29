@@ -51,6 +51,7 @@ FILE_MANIFEST=(
   "core/terminal/macos.terminal"
   "core/terminal/linux.conf"
   "core/colors/perfect16.yaml"
+  "core/sounds/pop.wav"
   
   # Add-on files
   "addons/miniconda/config.yaml"

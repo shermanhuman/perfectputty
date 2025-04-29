@@ -27,17 +27,16 @@ $filesToDownload = @(
     "core/profiles/powershell.ps1",
     "core/terminal/windows.json",
     "core/colors/perfect16.yaml",
+    "core/sounds/pop.wav",
     
     # Add-on files
     "addons/putty/config.yaml",
     "addons/putty/windows.ps1",
+    "addons/putty/putty-settings.reg",
     "addons/miniconda/config.yaml",
     "addons/miniconda/windows.ps1",
     "addons/nodejs/config.yaml",
-    "addons/nodejs/windows.ps1",
-    
-    # Registry files
-    "default-settings.reg"
+    "addons/nodejs/windows.ps1"
 )
 
 # Download function with retry logic
