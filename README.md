@@ -12,6 +12,22 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 - **Unified Configuration**: Shared color schemes, fonts, and settings across platforms
 - **Modular Add-ons**: Optional components like PuTTY, Miniconda, and Node.js
 - **Simple Installation**: One-line installation command
+- **Safe Configuration**: Automatic backups of existing settings before modifications
+
+## Safety Features
+
+Perfect Environment prioritizes the safety of your existing configuration:
+
+- **Automatic Backups**: Before modifying any configuration file, the installer creates a backup
+- **Timestamped Files**: All backups include timestamps in the filename for easy identification
+- **Central Storage**: Backups are stored in a dedicated `PerfectPutty_Backups` directory in your home folder
+- **Error Recovery**: If an installation step fails, you'll be offered the option to restore from backup
+- **Platform-Specific Methods**: Uses appropriate backup methods for each platform:
+  - Windows: Registry exports, file copies
+  - macOS: plist exports, file copies
+  - Linux: dconf dumps, file copies
+
+This ensures that your existing terminal settings, shell profiles, and other configurations can be easily restored if needed.
 
 ## Installation
 
@@ -116,6 +132,53 @@ bash tests/run-tests.sh
 
 # On Windows
 powershell tests/run-tests.ps1
+```
+
+## Troubleshooting
+
+### Windows Terminal Settings
+
+If you encounter issues with Windows Terminal settings after installation, a repair script is included:
+
+```powershell
+# Run in PowerShell
+.\fix-terminal-settings.ps1
+```
+
+This script:
+- Creates a backup of your current Windows Terminal settings
+- Fixes common issues with the settings.json file format
+- Restores from backup if the repair fails
+
+### Restoring from Backups
+
+All backups are stored in the `PerfectPutty_Backups` directory in your home folder. Each backup includes a timestamp in the filename.
+
+To manually restore a backup:
+
+**Windows PowerShell Profile:**
+```powershell
+Copy-Item "~/PerfectPutty_Backups/PowerShell_Profile_Backup_YYYYMMDD-HHMMSS.ps1" $PROFILE
+```
+
+**Windows Terminal Settings:**
+```powershell
+Copy-Item "~/PerfectPutty_Backups/Terminal_Settings_Backup_YYYYMMDD-HHMMSS.json" "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+```
+
+**PuTTY Registry Settings:**
+```powershell
+regedit.exe /s "~/PerfectPutty_Backups/PuTTY_Registry_Backup_YYYYMMDD-HHMMSS.reg"
+```
+
+**Unix Shell Profile:**
+```bash
+cp ~/PerfectPutty_Backups/Shell_Profile_Backup_YYYYMMDD-HHMMSS ~/.profile
+```
+
+**Terminal.app Settings (macOS):**
+```bash
+defaults import com.apple.Terminal ~/PerfectPutty_Backups/Terminal_Settings_Backup_YYYYMMDD-HHMMSS.plist
 ```
 
 ## Credits
