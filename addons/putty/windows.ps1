@@ -31,7 +31,7 @@ function Install-PuTTY {
   }
   
   # Apply registry settings
-  $regFilePath = Join-Path $PSScriptRoot "..\..\default-settings.reg"
+  $regFilePath = Join-Path $PSScriptRoot "putty-settings.reg"
   if (Test-Path $regFilePath) {
     Write-Host "Applying PuTTY registry settings..." -ForegroundColor Cyan
     
