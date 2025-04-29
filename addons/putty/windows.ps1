@@ -34,8 +34,65 @@ function Install-PuTTY {
   $regFilePath = Join-Path $PSScriptRoot "..\..\default-settings.reg"
   if (Test-Path $regFilePath) {
     Write-Host "Applying PuTTY registry settings..." -ForegroundColor Cyan
-    Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$regFilePath`"" -Wait
-    Write-Host "PuTTY registry settings applied successfully!" -ForegroundColor Green
+    
+    # Create a backup of the PuTTY registry settings
+    $backupDir = Join-Path $env:USERPROFILE "PerfectPutty_Backups"
+    if (-not (Test-Path $backupDir)) {
+      New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+    }
+    
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backupFile = Join-Path $backupDir "PuTTY_Registry_Backup_$timestamp.reg"
+    
+    Write-Host "Creating backup of PuTTY registry settings to $backupFile..." -ForegroundColor Cyan
+    
+    # Determine which registry keys are being modified by reading the .reg file
+    $regContent = Get-Content $regFilePath -Raw
+    $regKeyPattern = '^\[HKEY_[^\]]+\]'
+    $regKeys = [regex]::Matches($regContent, $regKeyPattern) | ForEach-Object { $_.Value.Trim('[]') }
+    
+    # Export each registry key to the backup file
+    foreach ($key in $regKeys) {
+      if ($key -match "^HKEY_CURRENT_USER\\(.*)$") {
+        $relativePath = $matches[1]
+        Write-Host "Backing up registry key: $key" -ForegroundColor Gray
+        
+        # Export the registry key if it exists
+        if (Test-Path "Registry::$key") {
+          reg export "$key" "$backupFile.temp" /y | Out-Null
+          
+          # Append to the backup file if it exists, otherwise create it
+          if (Test-Path $backupFile) {
+            $tempContent = Get-Content "$backupFile.temp" -Raw
+            # Skip the first two lines (Windows Registry Editor header) if not the first key
+            $tempContent = $tempContent -replace "^Windows Registry Editor.*\r\n\r\n", ""
+            Add-Content -Path $backupFile -Value $tempContent
+          } else {
+            Copy-Item "$backupFile.temp" $backupFile
+          }
+          
+          # Clean up temp file
+          Remove-Item "$backupFile.temp" -Force -ErrorAction SilentlyContinue
+        }
+      }
+    }
+    
+    Write-Host "Registry backup created successfully!" -ForegroundColor Green
+    
+    # Apply the new settings
+    try {
+      Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$regFilePath`"" -Wait
+      Write-Host "PuTTY registry settings applied successfully!" -ForegroundColor Green
+    } catch {
+      Write-Host "Error applying PuTTY registry settings: $_" -ForegroundColor Red
+      
+      $restore = Read-Host "Would you like to restore from backup? (y/n)"
+      if ($restore -eq "y") {
+        Write-Host "Restoring registry settings from $backupFile..." -ForegroundColor Yellow
+        Start-Process -FilePath "regedit.exe" -ArgumentList "/s `"$backupFile`"" -Wait
+        Write-Host "Registry settings restored successfully!" -ForegroundColor Green
+      }
+    }
   } else {
     Write-Host "PuTTY registry settings file not found at $regFilePath" -ForegroundColor Red
   }

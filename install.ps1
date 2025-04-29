@@ -138,9 +138,37 @@ if (-not (Test-Path $profileDir)) {
     New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
 }
 
+# Create a backup of the existing profile if it exists
+if (Test-Path $profilePath) {
+    $backupDir = Join-Path $env:USERPROFILE "PerfectPutty_Backups"
+    if (-not (Test-Path $backupDir)) {
+        New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+    }
+    
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backupFile = Join-Path $backupDir "PowerShell_Profile_Backup_$timestamp.ps1"
+    
+    Write-Host "Creating backup of PowerShell profile to $backupFile..." -ForegroundColor Cyan
+    Copy-Item -Path $profilePath -Destination $backupFile -Force
+    Write-Host "PowerShell profile backup created successfully!" -ForegroundColor Green
+}
+
 # Write profile
-Set-Content -Path $profilePath -Value $profileContent
-Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor Green
+try {
+    Set-Content -Path $profilePath -Value $profileContent
+    Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor Green
+} catch {
+    Write-Host "Error installing PowerShell profile: $_" -ForegroundColor Red
+    
+    if (Test-Path $backupFile) {
+        $restore = Read-Host "Would you like to restore from backup? (y/n)"
+        if ($restore -eq "y") {
+            Write-Host "Restoring PowerShell profile from $backupFile..." -ForegroundColor Yellow
+            Copy-Item -Path $backupFile -Destination $profilePath -Force
+            Write-Host "PowerShell profile restored successfully!" -ForegroundColor Green
+        }
+    }
+}
 
 # Windows Terminal color scheme
 $colorScheme = @{
@@ -180,23 +208,57 @@ if (Test-Path $wtSettings) {
 }
 
 if ($settingsPath) {
-    $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
-    
-    # Check if the schemes array exists, if not, create it
-    if (-not $settings.schemes) {
-        $settings | Add-Member -Type NoteProperty -Name schemes -Value @()
+    try {
+        # Create a backup of the settings file
+        $backupPath = "$settingsPath.backup"
+        Copy-Item -Path $settingsPath -Destination $backupPath -Force
+        Write-Host "Created backup of Windows Terminal settings at $backupPath" -ForegroundColor Green
+        
+        # Read the settings file
+        $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
+        
+        # Handle schemes property based on its type
+        if ($null -eq $settings.schemes) {
+            # If schemes doesn't exist, create it as an array
+            $settings | Add-Member -Type NoteProperty -Name schemes -Value @($colorScheme)
+        } elseif ($settings.schemes -is [System.Array]) {
+            # If schemes is already an array, remove existing scheme with the same name
+            $settings.schemes = @($settings.schemes | Where-Object { $_.name -ne $colorScheme.name })
+            # Add the new color scheme
+            $settings.schemes += $colorScheme
+        } else {
+            # If schemes exists but is not an array (e.g., it's an object), convert it to an array
+            $existingScheme = $settings.schemes
+            $schemeArray = @()
+            
+            # Only add the existing scheme if it's not the same name as our new one
+            if ($existingScheme.name -ne $colorScheme.name) {
+                $schemeArray += $existingScheme
+            }
+            
+            # Add our new scheme
+            $schemeArray += $colorScheme
+            
+            # Replace the schemes property with the array
+            $settings.PSObject.Properties.Remove('schemes')
+            $settings | Add-Member -Type NoteProperty -Name schemes -Value $schemeArray
+        }
+        
+        # Save the updated settings
+        $settingsJson = ConvertTo-Json -InputObject $settings -Depth 32
+        Set-Content -Path $settingsPath -Value $settingsJson
+        
+        Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "Error updating Windows Terminal settings: $_" -ForegroundColor Red
+        Write-Host "Restoring backup..." -ForegroundColor Yellow
+        
+        # Restore from backup if it exists
+        if (Test-Path $backupPath) {
+            Copy-Item -Path $backupPath -Destination $settingsPath -Force
+            Write-Host "Settings restored from backup." -ForegroundColor Green
+        }
     }
-    
-    # Remove existing scheme with the same name if it exists
-    $settings.schemes = $settings.schemes | Where-Object { $_.name -ne $colorScheme.name }
-    
-    # Add the new color scheme
-    $settings.schemes += $colorScheme
-    
-    # Save the updated settings
-    $settings | ConvertTo-Json -Depth 32 | Set-Content $settingsPath
-    
-    Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor Green
 } else {
     Write-Host "Windows Terminal settings file not found" -ForegroundColor Yellow
 }
