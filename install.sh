@@ -60,6 +60,16 @@ FILE_MANIFEST=(
   "addons/nodejs/config.yaml"
   "addons/nodejs/macos.sh"
   "addons/nodejs/linux.sh"
+  
+  # Test files
+  "tests/run-tests.sh"
+  "tests/common/colortest.sh"
+  "tests/common/unicode-test.sh"
+  "tests/common/ascii/big.ascii"
+  "tests/common/ascii/circle.ascii"
+  "tests/common/ascii/future.ascii"
+  "tests/common/ascii/mike.ascii"
+  "tests/common/ascii/pagga.ascii"
 )
 
 # Download function with retry logic

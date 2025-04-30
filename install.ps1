@@ -36,7 +36,17 @@ $filesToDownload = @(
     "addons/python/config.yaml",
     "addons/python/windows.ps1",
     "addons/nodejs/config.yaml",
-    "addons/nodejs/windows.ps1"
+    "addons/nodejs/windows.ps1",
+    
+    # Test files
+    "tests/run-tests.ps1",
+    "tests/common/colortest.ps1",
+    "tests/common/unicode-test.sh",
+    "tests/common/ascii/big.ascii",
+    "tests/common/ascii/circle.ascii",
+    "tests/common/ascii/future.ascii",
+    "tests/common/ascii/mike.ascii",
+    "tests/common/ascii/pagga.ascii"
 )
 
 # Download function with retry logic
