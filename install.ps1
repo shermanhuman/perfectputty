@@ -186,8 +186,14 @@ try {
     }
     
     # Print success message on the same line where the spinner was
-    $sixDotBraille = [char]::ConvertFromUtf32(0x283F)
-    Write-Host "`r$sixDotBraille All files downloaded successfully!" -ForegroundColor $Mint
+    try {
+        # Try using the six dot braille character directly
+        Write-Host "`r⠿ All files downloaded successfully!" -ForegroundColor $Mint
+    }
+    catch {
+        # Fallback if there's any issue with the Unicode character
+        Write-Host "`rAll files downloaded successfully!" -ForegroundColor $Mint
+    }
     
     # Check if PowerShell-YAML module is installed
     if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
