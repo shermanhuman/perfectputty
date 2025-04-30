@@ -78,9 +78,9 @@ show_download_progress() {
   local file_path="$3"
   local file_size="$4"
   
-  # Simple spinner characters that work in all terminals
-  local spinstr='-\|/'
-  local spinner_index=$((current_file % 4))
+  # Braille spinner characters for a more elegant animation
+  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  local spinner_index=$((current_file % 10))
   local spinner=${spinstr:$spinner_index:1}
   
   # Format the status line according to user's preferred format
@@ -129,6 +129,7 @@ download_file() {
       if [ $attempt -lt $max_retries ]; then
         backoff=$((2 ** attempt))
         printf "\r%-100s" " "
+        # Already using the warning symbol (⚠), keeping it consistent
         printf "\r${LEMON}⚠ [$current_file/$total_files] Failed, retrying in $backoff seconds... $file_path${NC}"
         sleep $backoff
       else
@@ -166,11 +167,13 @@ printf "\r%-100s\r" " "
 
 # Check if any downloads failed
 if [ $FAILED_FILES -gt 0 ]; then
-  echo -e "${PINK}$FAILED_FILES files failed to download. Aborting installation.${NC}"
+  # Use the warning symbol (⚠) for consistency with the error message style
+  echo -e "${PINK}⚠ $FAILED_FILES files failed to download. Aborting installation.${NC}"
   exit 1
 fi
 
-echo -e "${MINT}All files downloaded successfully!${NC}"
+# Use the six dot braille character (⠿) in the success message
+echo -e "${MINT}⠿ All files downloaded successfully!${NC}"
 
 # Create default user-config.yaml
 config_path="$TEMP_DIR/user-config.yaml"
