@@ -3,13 +3,12 @@
 # This script installs the Perfect environment configuration
 
 # Define color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-GRAY='\033[0;90m'
-NC='\033[0m' # No Color
+PURPLE='\033[0;35m'   # 74569b - Headers, section titles
+MINT='\033[0;32m'     # 96fbc7 - Success messages
+LEMON='\033[0;33m'    # f7ffae - Warnings, prompts
+PINK='\033[0;31m'     # ffb3cb - Errors
+LAVENDER='\033[0;34m' # d8bfd8 - Info messages
+NC='\033[0m'          # No Color
 
 # Define repository information
 REPO_OWNER="shermanhuman"
@@ -23,21 +22,21 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   OS="linux"
 else
-  echo -e "${RED}Unsupported operating system: $OSTYPE${NC}"
+  echo -e "${PINK}Unsupported operating system: $OSTYPE${NC}"
   exit 1
 fi
 
 # Create a unique temporary directory
 TEMP_DIR=$(mktemp -d)
 if [ ! -d "$TEMP_DIR" ]; then
-  echo -e "${RED}Failed to create temporary directory${NC}"
+  echo -e "${PINK}Failed to create temporary directory${NC}"
   exit 1
 fi
-echo -e "${GRAY}Created temporary directory: $TEMP_DIR${NC}"
+echo -e "${LAVENDER}Created temporary directory: $TEMP_DIR${NC}"
 
 # Cleanup function
 cleanup() {
-  echo -e "${GRAY}Cleaning up temporary files...${NC}"
+  echo -e "${LAVENDER}Cleaning up temporary files...${NC}"
   rm -rf "$TEMP_DIR"
 }
 
@@ -89,7 +88,7 @@ show_download_progress() {
   
   # Clear the line and write the new status
   printf "\r%-100s" " "
-  printf "\r${CYAN}%s${NC}" "$status_line"
+  printf "\r${PURPLE}%s${NC}" "$status_line"
 }
 
 # Clean up on exit
@@ -130,11 +129,11 @@ download_file() {
       if [ $attempt -lt $max_retries ]; then
         backoff=$((2 ** attempt))
         printf "\r%-100s" " "
-        printf "\r${YELLOW}⚠ [$current_file/$total_files] Failed, retrying in $backoff seconds... $file_path${NC}"
+        printf "\r${LEMON}⚠ [$current_file/$total_files] Failed, retrying in $backoff seconds... $file_path${NC}"
         sleep $backoff
       else
         printf "\r%-100s" " "
-        printf "\r${RED}❌ [$current_file/$total_files] Failed after $max_retries attempts: $file_path${NC}\n"
+        printf "\r${PINK}❌ [$current_file/$total_files] Failed after $max_retries attempts: $file_path${NC}\n"
         return 1
       fi
     fi
@@ -167,11 +166,11 @@ printf "\r%-100s\r" " "
 
 # Check if any downloads failed
 if [ $FAILED_FILES -gt 0 ]; then
-  echo -e "${RED}$FAILED_FILES files failed to download. Aborting installation.${NC}"
+  echo -e "${PINK}$FAILED_FILES files failed to download. Aborting installation.${NC}"
   exit 1
 fi
 
-echo -e "${GREEN}All files downloaded successfully!${NC}"
+echo -e "${MINT}All files downloaded successfully!${NC}"
 
 # Create default user-config.yaml
 config_path="$TEMP_DIR/user-config.yaml"
@@ -184,10 +183,10 @@ font:
 terminal:
   scrollback: 10000
 EOF
-echo -e "${GREEN}Created default user configuration at $config_path${NC}"
+echo -e "${MINT}Created default user configuration at $config_path${NC}"
 
 # Install core components
-echo -e "${CYAN}Installing core components...${NC}"
+echo -e "${PURPLE}Installing core components...${NC}"
 
 # Install shell profile
 profile_path="$HOME/.profile"
@@ -201,9 +200,9 @@ if [ -f "$profile_path" ]; then
   timestamp=$(date +"%Y%m%d-%H%M%S")
   backup_file="$backup_dir/Shell_Profile_Backup_$timestamp"
   
-  echo -e "${CYAN}Creating backup of shell profile to $backup_file...${NC}"
+  echo -e "${PURPLE}Creating backup of shell profile to $backup_file...${NC}"
   cp "$profile_path" "$backup_file"
-  echo -e "${GREEN}Shell profile backup created successfully!${NC}"
+  echo -e "${MINT}Shell profile backup created successfully!${NC}"
 fi
 
 # Read profile template
@@ -212,38 +211,38 @@ profile_content=$(cat "$template_path")
 
 # Write new profile
 if echo "$profile_content" > "$profile_path"; then
-  echo -e "${GREEN}Shell profile installed to $profile_path${NC}"
+  echo -e "${MINT}Shell profile installed to $profile_path${NC}"
 else
-  echo -e "${RED}Error installing shell profile${NC}"
+  echo -e "${PINK}Error installing shell profile${NC}"
   
   if [ -f "$backup_file" ]; then
     echo -n "Would you like to restore from backup? (y/n): "
     read -r restore
     
     if [ "$restore" = "y" ]; then
-      echo -e "${YELLOW}Restoring shell profile from $backup_file...${NC}"
+      echo -e "${LEMON}Restoring shell profile from $backup_file...${NC}"
       cp "$backup_file" "$profile_path"
-      echo -e "${GREEN}Shell profile restored successfully!${NC}"
+      echo -e "${MINT}Shell profile restored successfully!${NC}"
     fi
   fi
 fi
 
 # Install terminal config
 if [ "$OS" = "macos" ]; then
-  echo -e "${CYAN}Installing Terminal.app configuration...${NC}"
+  echo -e "${PURPLE}Installing Terminal.app configuration...${NC}"
   
   # Create backup of Terminal.app settings
   timestamp=$(date +"%Y%m%d-%H%M%S")
   backup_file="$backup_dir/Terminal_Settings_Backup_$timestamp.plist"
   
-  echo -e "${CYAN}Creating backup of Terminal.app settings...${NC}"
+  echo -e "${PURPLE}Creating backup of Terminal.app settings...${NC}"
   
   # Check if Terminal settings exist
   if defaults read com.apple.Terminal > /dev/null 2>&1; then
     defaults export com.apple.Terminal "$backup_file"
-    echo -e "${GREEN}Terminal.app settings backup created successfully at $backup_file${NC}"
+    echo -e "${MINT}Terminal.app settings backup created successfully at $backup_file${NC}"
   else
-    echo -e "${YELLOW}No existing Terminal.app settings found to backup${NC}"
+    echo -e "${LEMON}No existing Terminal.app settings found to backup${NC}"
   fi
   
   # Create Terminal.app profiles directory if it doesn't exist
@@ -258,9 +257,9 @@ if [ "$OS" = "macos" ]; then
     # Set as default
     if defaults write com.apple.Terminal "Default Window Settings" -string "Perfect" && \
        defaults write com.apple.Terminal "Startup Window Settings" -string "Perfect"; then
-      echo -e "${GREEN}Terminal.app configuration installed successfully!${NC}"
+      echo -e "${MINT}Terminal.app configuration installed successfully!${NC}"
     else
-      echo -e "${RED}Error installing Terminal.app configuration${NC}"
+      echo -e "${PINK}Error installing Terminal.app configuration${NC}"
       
       # Offer to restore from backup
       if [ -f "$backup_file" ]; then
@@ -268,17 +267,17 @@ if [ "$OS" = "macos" ]; then
         read -r restore
         
         if [ "$restore" = "y" ]; then
-          echo -e "${YELLOW}Restoring Terminal.app settings from $backup_file...${NC}"
+          echo -e "${LEMON}Restoring Terminal.app settings from $backup_file...${NC}"
           defaults import com.apple.Terminal "$backup_file"
-          echo -e "${GREEN}Terminal.app settings restored successfully!${NC}"
+          echo -e "${MINT}Terminal.app settings restored successfully!${NC}"
         fi
       fi
     fi
   else
-    echo -e "${RED}Terminal.app configuration not found at $terminal_path${NC}"
+    echo -e "${PINK}Terminal.app configuration not found at $terminal_path${NC}"
   fi
 elif [ "$OS" = "linux" ]; then
-  echo -e "${CYAN}Installing terminal configuration for Linux...${NC}"
+  echo -e "${PURPLE}Installing terminal configuration for Linux...${NC}"
   
   # Create backup directory
   backup_dir="$HOME/PerfectPutty_Backups"
@@ -287,15 +286,15 @@ elif [ "$OS" = "linux" ]; then
   
   # Detect terminal
   if [ -d "$HOME/.config/gnome-terminal" ]; then
-    echo -e "${CYAN}GNOME Terminal detected. Installing configuration...${NC}"
+    echo -e "${PURPLE}GNOME Terminal detected. Installing configuration...${NC}"
     
     # Backup GNOME Terminal settings
     backup_file="$backup_dir/GNOME_Terminal_Backup_$timestamp.dconf"
-    echo -e "${CYAN}Creating backup of GNOME Terminal settings to $backup_file...${NC}"
+    echo -e "${PURPLE}Creating backup of GNOME Terminal settings to $backup_file...${NC}"
     
     if command -v dconf > /dev/null; then
       dconf dump /org/gnome/terminal/ > "$backup_file"
-      echo -e "${GREEN}GNOME Terminal settings backup created successfully!${NC}"
+      echo -e "${MINT}GNOME Terminal settings backup created successfully!${NC}"
       
       # GNOME Terminal configuration
       terminal_conf="$TEMP_DIR/core/terminal/linux.conf"
@@ -326,16 +325,16 @@ elif [ "$OS" = "linux" ]; then
         # Set as default
         dconf write "/org/gnome/terminal/legacy/profiles:/default" "'$profile_id'"
         
-        echo -e "${GREEN}GNOME Terminal configuration installed successfully!${NC}"
+        echo -e "${MINT}GNOME Terminal configuration installed successfully!${NC}"
       else
-        echo -e "${RED}Linux terminal configuration not found at $terminal_conf${NC}"
+        echo -e "${PINK}Linux terminal configuration not found at $terminal_conf${NC}"
       fi
     else
-      echo -e "${RED}dconf command not found. Cannot backup or configure GNOME Terminal.${NC}"
+      echo -e "${PINK}dconf command not found. Cannot backup or configure GNOME Terminal.${NC}"
     fi
     
   elif [ -d "$HOME/.config/konsole" ]; then
-    echo -e "${CYAN}Konsole detected. Installing configuration...${NC}"
+    echo -e "${PURPLE}Konsole detected. Installing configuration...${NC}"
     
     # Backup Konsole settings
     konsole_dir="$HOME/.local/share/konsole"
@@ -343,9 +342,9 @@ elif [ "$OS" = "linux" ]; then
       backup_file="$backup_dir/Konsole_Backup_$timestamp"
       mkdir -p "$backup_file"
       
-      echo -e "${CYAN}Creating backup of Konsole settings to $backup_file...${NC}"
+      echo -e "${PURPLE}Creating backup of Konsole settings to $backup_file...${NC}"
       cp -r "$konsole_dir"/* "$backup_file" 2>/dev/null
-      echo -e "${GREEN}Konsole settings backup created successfully!${NC}"
+      echo -e "${MINT}Konsole settings backup created successfully!${NC}"
       
       # Konsole configuration
       terminal_conf="$TEMP_DIR/core/terminal/linux.conf"
@@ -431,25 +430,25 @@ Color=$(grep "^color14=" "$terminal_conf" | cut -d "=" -f2)
 Color=$(grep "^color15=" "$terminal_conf" | cut -d "=" -f2)
 EOF
         
-        echo -e "${GREEN}Konsole configuration installed successfully!${NC}"
+        echo -e "${MINT}Konsole configuration installed successfully!${NC}"
       else
-        echo -e "${RED}Linux terminal configuration not found at $terminal_conf${NC}"
+        echo -e "${PINK}Linux terminal configuration not found at $terminal_conf${NC}"
       fi
     else
-      echo -e "${YELLOW}No existing Konsole settings found to backup.${NC}"
+      echo -e "${LEMON}No existing Konsole settings found to backup.${NC}"
     fi
     
   elif [ -d "$HOME/.config/xfce4/terminal" ]; then
-    echo -e "${CYAN}XFCE Terminal detected. Installing configuration...${NC}"
+    echo -e "${PURPLE}XFCE Terminal detected. Installing configuration...${NC}"
     
     # Backup XFCE Terminal settings
     xfce_config="$HOME/.config/xfce4/terminal/terminalrc"
     if [ -f "$xfce_config" ]; then
       backup_file="$backup_dir/XFCE_Terminal_Backup_$timestamp"
       
-      echo -e "${CYAN}Creating backup of XFCE Terminal settings to $backup_file...${NC}"
+      echo -e "${PURPLE}Creating backup of XFCE Terminal settings to $backup_file...${NC}"
       cp "$xfce_config" "$backup_file"
-      echo -e "${GREEN}XFCE Terminal settings backup created successfully!${NC}"
+      echo -e "${MINT}XFCE Terminal settings backup created successfully!${NC}"
       
       # XFCE Terminal configuration
       terminal_conf="$TEMP_DIR/core/terminal/linux.conf"
@@ -467,17 +466,17 @@ ColorCursor=$(grep "^cursor=" "$terminal_conf" | cut -d "=" -f2)
 ColorPalette=$(grep "^color0=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color1=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color2=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color3=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color4=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color5=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color6=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color7=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color8=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color9=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color10=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color11=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color12=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color13=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color14=" "$terminal_conf" | cut -d "=" -f2);$(grep "^color15=" "$terminal_conf" | cut -d "=" -f2)
 EOF
         
-        echo -e "${GREEN}XFCE Terminal configuration installed successfully!${NC}"
+        echo -e "${MINT}XFCE Terminal configuration installed successfully!${NC}"
       else
-        echo -e "${RED}Linux terminal configuration not found at $terminal_conf${NC}"
+        echo -e "${PINK}Linux terminal configuration not found at $terminal_conf${NC}"
       fi
     else
-      echo -e "${YELLOW}No existing XFCE Terminal settings found to backup.${NC}"
+      echo -e "${LEMON}No existing XFCE Terminal settings found to backup.${NC}"
     fi
     
   else
-    echo -e "${YELLOW}Unsupported terminal. Configuration not installed.${NC}"
-    echo -e "${YELLOW}Supported terminals: GNOME Terminal, Konsole, XFCE Terminal${NC}"
+    echo -e "${LEMON}Unsupported terminal. Configuration not installed.${NC}"
+    echo -e "${LEMON}Supported terminals: GNOME Terminal, Konsole, XFCE Terminal${NC}"
   fi
 fi
 
@@ -486,7 +485,7 @@ echo -n "Would you like to install the SauceCodePro Nerd Font? (y/n): "
 read -r install_fonts
 
 if [ "$install_fonts" = "y" ]; then
-  echo -e "${CYAN}Downloading SauceCodePro Nerd Font...${NC}"
+  echo -e "${PURPLE}Downloading SauceCodePro Nerd Font...${NC}"
   font_url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/SourceCodePro.zip"
   font_zip="/tmp/SauceCodePro.zip"
   font_dir="/tmp/SauceCodePro"
@@ -512,7 +511,7 @@ if [ "$install_fonts" = "y" ]; then
   rm -f "$font_zip"
   rm -rf "$font_dir"
   
-  echo -e "${GREEN}Fonts installed successfully!${NC}"
+  echo -e "${MINT}Fonts installed successfully!${NC}"
 fi
 
 # Process add-ons
@@ -549,9 +548,9 @@ if [ "$install_addons" = "y" ]; then
   SELECTED_ADDONS=()
   
   if [ ${#ADDONS[@]} -eq 0 ]; then
-    echo -e "${YELLOW}No add-ons available.${NC}"
+    echo -e "${LEMON}No add-ons available.${NC}"
   else
-    echo -e "\n${CYAN}=== Available Add-ons ===${NC}"
+    echo -e "\n${PURPLE}=== Available Add-ons ===${NC}"
     
     for i in "${!ADDONS[@]}"; do
       platforms="${ADDON_PLATFORMS[$i]}"
@@ -597,12 +596,12 @@ if [ "$install_addons" = "y" ]; then
     # Install selected add-ons
     for i in "${!ADDONS[@]}"; do
       if [ "${SELECTED_ADDONS[$i]}" = "true" ]; then
-        echo -e "${CYAN}Installing add-on: ${ADDON_NAMES[$i]}${NC}"
+        echo -e "${PURPLE}Installing add-on: ${ADDON_NAMES[$i]}${NC}"
         script_path="${ADDONS[$i]}/$OS.sh"
         if [ -f "$script_path" ]; then
           bash "$script_path"
         else
-          echo -e "${YELLOW}No installation script found for ${ADDON_NAMES[$i]} on $OS${NC}"
+          echo -e "${LEMON}No installation script found for ${ADDON_NAMES[$i]} on $OS${NC}"
         fi
       fi
     done
@@ -619,8 +618,8 @@ if [ "$run_tests" = "y" ]; then
   if [ -f "$tests_path" ]; then
     bash "$tests_path"
   else
-    echo -e "${YELLOW}Tests not found at $tests_path${NC}"
+    echo -e "${LEMON}Tests not found at $tests_path${NC}"
   fi
 fi
 
-echo -e "${GREEN}Installation complete!${NC}"
+echo -e "${MINT}Installation complete!${NC}"

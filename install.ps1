@@ -1,6 +1,13 @@
 # Perfect Environment Installer for Windows
 # This script installs the Perfect environment configuration for Windows
 
+# Define color constants
+$Purple = [System.ConsoleColor]::Magenta    # 74569b - Headers, section titles
+$Mint = [System.ConsoleColor]::Green        # 96fbc7 - Success messages
+$Lemon = [System.ConsoleColor]::Yellow      # f7ffae - Warnings, prompts
+$Pink = [System.ConsoleColor]::Red          # ffb3cb - Errors
+$Lavender = [System.ConsoleColor]::Blue     # d8bfd8 - Info messages
+
 # Define repository information
 $repoOwner = "shermanhuman"
 $repoName = "perfectputty"
@@ -19,7 +26,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Create a unique temporary directory
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "PerfectPutty_$([System.Guid]::NewGuid().ToString())"
 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-Write-Host "Created temporary directory: $tempDir" -ForegroundColor Gray
+Write-Host "Created temporary directory: $tempDir" -ForegroundColor $Lavender
 
 # Define file manifest
 $filesToDownload = @(
@@ -117,12 +124,12 @@ function Download-FileWithRetry {
             if ($attempt -lt $MaxRetries) {
                 $backoffSeconds = [Math]::Pow(2, $attempt)
                 $errorMsg = "⚠ [$CurrentFile/$TotalFiles] Failed, retrying in $backoffSeconds seconds... $FileName"
-                Write-Host "`r$errorMsg" -ForegroundColor Yellow -NoNewline
+                Write-Host "`r$errorMsg" -ForegroundColor $Lemon -NoNewline
                 Start-Sleep -Seconds $backoffSeconds
             }
             else {
                 $errorMsg = "❌ [$CurrentFile/$TotalFiles] Failed after $MaxRetries attempts: $FileName"
-                Write-Host "`r$errorMsg" -ForegroundColor Red
+                Write-Host "`r$errorMsg" -ForegroundColor $Pink
                 return $false
             }
         }
@@ -168,15 +175,15 @@ try {
     Write-Host "`r" -NoNewline
     
     if ($failedFiles -gt 0) {
-        Write-Host "$failedFiles files failed to download. Aborting installation." -ForegroundColor Red
+        Write-Host "$failedFiles files failed to download. Aborting installation." -ForegroundColor $Pink
         exit 1
     }
     
-    Write-Host "All files downloaded successfully!" -ForegroundColor Green
+    Write-Host "All files downloaded successfully!" -ForegroundColor $Mint
     
     # Check if PowerShell-YAML module is installed
     if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
-        Write-Host "Installing PowerShell-YAML module..." -ForegroundColor Cyan
+        Write-Host "Installing PowerShell-YAML module..." -ForegroundColor $Purple
         Install-Module -Name powershell-yaml -Scope CurrentUser -Force
     }
     
@@ -201,10 +208,10 @@ try {
     $yamlContent = "# Global user configuration`n" + $yamlContent
     Set-Content -Path $configPath -Value $yamlContent
     
-    Write-Host "Created default user configuration at $configPath" -ForegroundColor Green
+    Write-Host "Created default user configuration at $configPath" -ForegroundColor $Mint
     
     # Install core components
-    Write-Host "Installing core components..." -ForegroundColor Cyan
+    Write-Host "Installing core components..." -ForegroundColor $Purple
     
     # PowerShell profile content
     $profileContent = Get-Content -Path (Join-Path $tempDir "core/profiles/powershell.ps1") -Raw
@@ -228,24 +235,24 @@ try {
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
         $backupFile = Join-Path $backupDir "PowerShell_Profile_Backup_$timestamp.ps1"
         
-        Write-Host "Creating backup of PowerShell profile to $backupFile..." -ForegroundColor Cyan
+        Write-Host "Creating backup of PowerShell profile to $backupFile..." -ForegroundColor $Purple
         Copy-Item -Path $profilePath -Destination $backupFile -Force
-        Write-Host "PowerShell profile backup created successfully!" -ForegroundColor Green
+        Write-Host "PowerShell profile backup created successfully!" -ForegroundColor $Mint
     }
     
     # Write profile
     try {
         Set-Content -Path $profilePath -Value $profileContent
-        Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor Green
+        Write-Host "PowerShell profile installed to $profilePath" -ForegroundColor $Mint
     } catch {
-        Write-Host "Error installing PowerShell profile: $_" -ForegroundColor Red
+        Write-Host "Error installing PowerShell profile: $_" -ForegroundColor $Pink
         
         if (Test-Path $backupFile) {
             $restore = Read-Host "Would you like to restore from backup? (y/n)"
             if ($restore -eq "y") {
-                Write-Host "Restoring PowerShell profile from $backupFile..." -ForegroundColor Yellow
+                Write-Host "Restoring PowerShell profile from $backupFile..." -ForegroundColor $Lemon
                 Copy-Item -Path $backupFile -Destination $profilePath -Force
-                Write-Host "PowerShell profile restored successfully!" -ForegroundColor Green
+                Write-Host "PowerShell profile restored successfully!" -ForegroundColor $Mint
             }
         }
     }
@@ -255,7 +262,7 @@ try {
     $colorScheme = $colorSchemeJson | ConvertFrom-Json
     
     # Install Windows Terminal color scheme
-    Write-Host "Installing Windows Terminal configuration..." -ForegroundColor Cyan
+    Write-Host "Installing Windows Terminal configuration..." -ForegroundColor $Purple
     $wtSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
     $wtPreviewSettings = "$env:LocalAppData\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
     
@@ -277,7 +284,7 @@ try {
             $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
             $backupPath = Join-Path $backupDir "WindowsTerminal_Settings_Backup_$timestamp.json"
             Copy-Item -Path $settingsPath -Destination $backupPath -Force
-            Write-Host "Created backup of Windows Terminal settings at $backupPath" -ForegroundColor Green
+            Write-Host "Created backup of Windows Terminal settings at $backupPath" -ForegroundColor $Mint
             
             # Read the settings file
             $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
@@ -313,19 +320,19 @@ try {
             $settingsJson = ConvertTo-Json -InputObject $settings -Depth 32
             Set-Content -Path $settingsPath -Value $settingsJson
             
-            Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor Green
+            Write-Host "Windows Terminal color scheme installed successfully!" -ForegroundColor $Mint
         } catch {
-            Write-Host "Error updating Windows Terminal settings: $_" -ForegroundColor Red
-            Write-Host "Restoring backup..." -ForegroundColor Yellow
+            Write-Host "Error updating Windows Terminal settings: $_" -ForegroundColor $Pink
+            Write-Host "Restoring backup..." -ForegroundColor $Lemon
             
             # Restore from backup if it exists
             if (Test-Path $backupPath) {
                 Copy-Item -Path $backupPath -Destination $settingsPath -Force
-                Write-Host "Settings restored from backup." -ForegroundColor Green
+                Write-Host "Settings restored from backup." -ForegroundColor $Mint
             }
         }
     } else {
-        Write-Host "Windows Terminal settings file not found" -ForegroundColor Yellow
+        Write-Host "Windows Terminal settings file not found" -ForegroundColor $Lemon
     }
     
     # Install fonts
@@ -333,7 +340,7 @@ try {
     $installFonts = Read-Host
     
     if ($installFonts -eq "y") {
-        Write-Host "Downloading SauceCodePro Nerd Font..." -ForegroundColor Cyan
+        Write-Host "Downloading SauceCodePro Nerd Font..." -ForegroundColor $Purple
         $fontUrl = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/SourceCodePro.zip"
         $fontZip = "$env:TEMP\SauceCodePro.zip"
         $fontDir = "$env:TEMP\SauceCodePro"
@@ -366,7 +373,7 @@ try {
         Remove-Item -Path $fontZip -Force
         Remove-Item -Path $fontDir -Recurse -Force
         
-        Write-Host "Fonts installed successfully!" -ForegroundColor Green
+        Write-Host "Fonts installed successfully!" -ForegroundColor $Mint
     }
     
     # Process add-ons
@@ -396,7 +403,7 @@ try {
         if ($addons.Count -eq 0) {
             Write-Host "No add-ons available." -ForegroundColor Yellow
         } else {
-            Write-Host "`n=== Available Add-ons ===" -ForegroundColor Cyan
+            Write-Host "`n=== Available Add-ons ===" -ForegroundColor $Purple
             
             $selected = @()
             for ($i = 0; $i -lt $addons.Count; $i++) {
@@ -432,14 +439,14 @@ try {
             for ($i = 0; $i -lt $addons.Count; $i++) {
                 if ($selected[$i]) {
                     $addon = $addons[$i]
-                    Write-Host "Installing add-on: $($addon.Name)" -ForegroundColor Cyan
+                    Write-Host "Installing add-on: $($addon.Name)" -ForegroundColor $Purple
                     
                     $scriptPath = Join-Path $addon.Path "windows.ps1"
                     if (Test-Path $scriptPath) {
                         # Execute the add-on installation script
                         & $scriptPath
                     } else {
-                        Write-Host "No installation script found for $($addon.Name) on Windows" -ForegroundColor Yellow
+                        Write-Host "No installation script found for $($addon.Name) on Windows" -ForegroundColor $Lemon
                     }
                 }
             }
@@ -459,12 +466,12 @@ try {
         }
     }
     
-    Write-Host "Installation complete!" -ForegroundColor Green
+    Write-Host "Installation complete!" -ForegroundColor $Mint
 }
 finally {
     # Clean up temporary directory
     if (Test-Path $tempDir) {
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Host "Cleaned up temporary directory" -ForegroundColor Gray
+        Write-Host "Cleaned up temporary directory" -ForegroundColor $Lavender
     }
 }
