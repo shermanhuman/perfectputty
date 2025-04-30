@@ -168,6 +168,7 @@ try {
     $failedFiles = 0
     
     # Start spinner with download message (line 1)
+    Write-Host "Downloading $totalFiles files..." -ForegroundColor Cyan
     Start-Spinner -Message "Downloading $totalFiles files..."
     
     # Add empty lines for file info and download status (lines 2 and 3)
@@ -185,15 +186,12 @@ try {
             New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
         }
         
-        # Move cursor up 2 lines to update file info and download status
-        Write-Host "`e[2A" -NoNewline
+        # Move cursor up 1 line to update file info (preserving spinner line)
+        Write-Host "`e[1A" -NoNewline
         
         if (-not (Download-FileWithRetry -Url $url -OutputPath $outputPath -CurrentFile $currentFile -TotalFiles $totalFiles -FileName $file)) {
             $failedFiles++
         }
-        
-        # Move cursor back down to prepare for next file
-        Write-Host "`e[1B" -NoNewline
     }
     
     # Stop the spinner when done

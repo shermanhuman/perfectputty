@@ -183,15 +183,12 @@ echo ""
 for file_path in "${FILE_MANIFEST[@]}"; do
   CURRENT_FILE=$((CURRENT_FILE + 1))
   
-  # Move cursor up 2 lines to update file info and download status
-  printf "\033[2A"
+  # Move cursor up 1 line to update file info (preserving spinner line)
+  printf "\033[1A"
   
   if ! download_file "$file_path" "$CURRENT_FILE" "$TOTAL_FILES"; then
     FAILED_FILES=$((FAILED_FILES + 1))
   fi
-  
-  # Move cursor back down to prepare for next file
-  printf "\033[1B"
 done
 
 # Stop the spinner when done
