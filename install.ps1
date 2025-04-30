@@ -186,7 +186,8 @@ try {
     }
     
     # Print success message on the same line where the spinner was
-    Write-Host "`rAll files downloaded successfully!" -ForegroundColor $Mint
+    $sixDotBraille = [char]::ConvertFromUtf32(0x283F)
+    Write-Host "`r$sixDotBraille All files downloaded successfully!" -ForegroundColor $Mint
     
     # Check if PowerShell-YAML module is installed
     if (-not (Get-Module -ListAvailable -Name powershell-yaml)) {
