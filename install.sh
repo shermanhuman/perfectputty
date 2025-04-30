@@ -72,51 +72,28 @@ FILE_MANIFEST=(
   "tests/common/ascii/pagga.ascii"
 )
 
-# Global variables for spinner
-SPINNER_PID=""
-
-# Start the spinner animation
-start_spinner() {
-  local message="$1"
+# Show download progress function
+show_download_progress() {
+  local current_file="$1"
+  local total_files="$2"
+  local file_path="$3"
+  local file_size="$4"
   
-  # Kill any existing spinner
-  if [ -n "$SPINNER_PID" ]; then
-    kill -9 $SPINNER_PID 2>/dev/null
-    SPINNER_PID=""
-  fi
+  # Spinner characters
+  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  local spinner_index=$((current_file % 10))
+  local spinner=${spinstr:$spinner_index:1}
   
-  # Define spinner function
-  _spinner() {
-    local message="$1"
-    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    local i=0
-    
-    while true; do
-      local temp=${spinstr#?}
-      printf "\r%c %s" "${spinstr:$i:1}" "$message"
-      local spinstr=$temp${spinstr%"$temp"}
-      sleep 0.1
-      i=$(( (i+1) % 10 ))
-    done
-  }
+  # Format the status line according to user's preferred format
+  local status_line="$spinner [$current_file/$total_files] Downloading ($file_size) $file_path"
   
-  # Start spinner in background
-  _spinner "$message" &
-  SPINNER_PID=$!
+  # Clear the line and write the new status
+  printf "\r%-100s" " "
+  printf "\r${CYAN}%s${NC}" "$status_line"
 }
 
-# Stop the spinner animation
-stop_spinner() {
-  if [ -n "$SPINNER_PID" ]; then
-    kill -9 $SPINNER_PID 2>/dev/null
-    SPINNER_PID=""
-    # Clear the spinner line
-    printf "\r%-100s\r" " "
-  fi
-}
-
-# Clean up spinner on exit
-trap 'stop_spinner' EXIT
+# Clean up on exit
+trap cleanup EXIT
 
 # Download function with retry logic
 download_file() {
@@ -140,25 +117,24 @@ download_file() {
     file_size="$(echo "scale=2; $bytes/1024" | bc) KB"
   fi
   
-  # Update the file info line (line 2)
-  printf "\r${CYAN}[$current_file/$total_files] $file_path                                        ${NC}\n"
-  
-  # Update the download status line (line 3)
-  printf "${GRAY}  Downloading ($file_size)...                                          ${NC}"
+  # Show download progress with single-line format
+  show_download_progress "$current_file" "$total_files" "$file_path" "$file_size"
   
   while [ $attempt -lt $max_retries ] && [ "$success" = false ]; do
     attempt=$((attempt + 1))
     
     if curl -fsSL "$url" -o "$output_path" 2>/dev/null; then
       success=true
-      printf "\r${GRAY}  Downloading ($file_size)...${GREEN} Done!                                  ${NC}\n"
+      # No need to show "Done!" as we're moving to the next file
     else
       if [ $attempt -lt $max_retries ]; then
         backoff=$((2 ** attempt))
-        printf "\r${GRAY}  Downloading ($file_size)...${YELLOW} Failed, retrying in $backoff seconds...${NC}\n"
+        printf "\r%-100s" " "
+        printf "\r${YELLOW}⚠ [$current_file/$total_files] Failed, retrying in $backoff seconds... $file_path${NC}"
         sleep $backoff
       else
-        printf "\r${GRAY}  Downloading ($file_size)...${RED} Failed after $max_retries attempts${NC}\n"
+        printf "\r%-100s" " "
+        printf "\r${RED}❌ [$current_file/$total_files] Failed after $max_retries attempts: $file_path${NC}\n"
         return 1
       fi
     fi
@@ -172,27 +148,22 @@ TOTAL_FILES=${#FILE_MANIFEST[@]}
 CURRENT_FILE=0
 FAILED_FILES=0
 
-# Start spinner with download message (line 1)
-echo -e "${CYAN}Downloading ${TOTAL_FILES} files...${NC}"
-start_spinner "Downloading ${TOTAL_FILES} files..."
-
-# Add empty lines for file info and download status (lines 2 and 3)
-echo ""
+# Add a blank line for the download progress
 echo ""
 
 for file_path in "${FILE_MANIFEST[@]}"; do
   CURRENT_FILE=$((CURRENT_FILE + 1))
   
-  # Move cursor up 1 line to update file info (preserving spinner line)
-  printf "\033[1A"
-  
   if ! download_file "$file_path" "$CURRENT_FILE" "$TOTAL_FILES"; then
     FAILED_FILES=$((FAILED_FILES + 1))
   fi
+  
+  # Small delay to make the spinner animation visible
+  sleep 0.05
 done
 
-# Stop the spinner when done
-stop_spinner
+# Clear the progress line when done
+printf "\r%-100s\r" " "
 
 # Check if any downloads failed
 if [ $FAILED_FILES -gt 0 ]; then
