@@ -116,6 +116,10 @@ Each add-on is a self-contained module with:
 
 You can select which add-ons to install during the installation process.
 
+## VS Code configuration
+
+You'll need to set your font in VS Code to see the nerd font icons there.  To do that you'll need the font family name.  For Saucecode Pro Mono it's `SauceCodePro NFM`.  If you are using another font you can find the name by opening the font in the Windows Font Viewer under the label 'Font Name'.
+
 ## Testing
 
 After installation, you can run tests to verify your setup:
