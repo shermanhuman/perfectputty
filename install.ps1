@@ -68,7 +68,7 @@ function Show-DownloadProgress {
     $statusLine = "$spinner [$CurrentFile/$TotalFiles] Downloading ($FileSize) $FileName"
     
     # Clear the line and write the new status
-    $clearLine = " " * 100
+    # $clearLine = " " * 100
     # Write-Host "`r$clearLine" -NoNewline
     Write-Host "`r$statusLine" -NoNewline
 }
