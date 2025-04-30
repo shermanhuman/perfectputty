@@ -64,6 +64,9 @@ function Download-FileWithRetry {
     $attempt = 0
     $success = $false
     
+    # Update the file info line (line 2)
+    Write-Host "`r[$CurrentFile/$TotalFiles] $FileName                                        " -ForegroundColor Cyan
+    
     while (-not $success -and $attempt -lt $MaxRetries) {
         $attempt++
         try {
@@ -83,23 +86,22 @@ function Download-FileWithRetry {
                 $fileSize = "unknown size"
             }
             
-            # Show file info and download status
-            Write-Host "[$CurrentFile/$TotalFiles] $FileName" -ForegroundColor Cyan
-            Write-Host "  Downloading ($fileSize)..." -ForegroundColor Gray -NoNewline
+            # Update the download status line (line 3)
+            Write-Host "  Downloading ($fileSize)...                                          " -ForegroundColor Gray -NoNewline
             
             $webClient.DownloadFile($Url, $OutputPath)
             $success = $true
-            Write-Host " Done!" -ForegroundColor Green
+            Write-Host "`r  Downloading ($fileSize)... Done!                                  " -ForegroundColor Green
             return $true
         }
         catch {
             if ($attempt -lt $MaxRetries) {
                 $backoffSeconds = [Math]::Pow(2, $attempt)
-                Write-Host " Failed, retrying in $backoffSeconds seconds..." -ForegroundColor Yellow
+                Write-Host "`r  Downloading ($fileSize)... Failed, retrying in $backoffSeconds seconds..." -ForegroundColor Yellow
                 Start-Sleep -Seconds $backoffSeconds
             }
             else {
-                Write-Host " Failed after $MaxRetries attempts: $_" -ForegroundColor Red
+                Write-Host "`r  Downloading ($fileSize)... Failed after $MaxRetries attempts: $_" -ForegroundColor Red
                 return $false
             }
         }
@@ -111,30 +113,52 @@ function Download-FileWithRetry {
     }
 }
 
-# Simple spinner function that doesn't use background jobs
-function Show-Spinner {
+# Global variables for spinner
+$script:spinnerRunning = $false
+$script:spinnerJob = $null
+$script:spinnerMessage = ""
+
+# Start the spinner animation
+function Start-Spinner {
     param (
-        [string]$Message,
-        [int]$Seconds
+        [string]$Message
     )
     
-    $spinnerChars = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
-    $startTime = Get-Date
-    $endTime = $startTime.AddSeconds($Seconds)
-    $i = 0
-    
-    Write-Host ""
-    
-    while ((Get-Date) -lt $endTime) {
-        $spinner = $spinnerChars[$i % $spinnerChars.Count]
-        Write-Host "`r$spinner $Message" -NoNewline
-        Start-Sleep -Milliseconds 100
-        $i++
+    if ($script:spinnerRunning) {
+        Stop-Spinner
     }
     
-    # Clear the spinner line
-    Write-Host "`r$((" " * ($Message.Length + 2)))" -NoNewline
-    Write-Host "`r" -NoNewline
+    $script:spinnerMessage = $Message
+    $script:spinnerRunning = $true
+    
+    $script:spinnerJob = Start-Job -ScriptBlock {
+        param($Message)
+        
+        $spinnerChars = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+        $i = 0
+        
+        while ($true) {
+            $spinner = $spinnerChars[$i % $spinnerChars.Count]
+            Write-Host "`r$spinner $Message" -NoNewline
+            Start-Sleep -Milliseconds 100
+            $i++
+            if ($i -ge 10000) { $i = 0 }
+        }
+    } -ArgumentList $script:spinnerMessage
+}
+
+# Stop the spinner animation
+function Stop-Spinner {
+    if ($script:spinnerRunning) {
+        Stop-Job -Job $script:spinnerJob
+        Remove-Job -Job $script:spinnerJob -Force
+        $script:spinnerJob = $null
+        $script:spinnerRunning = $false
+        
+        # Clear the spinner line
+        Write-Host "`r$((" " * ($script:spinnerMessage.Length + 2)))" -NoNewline
+        Write-Host "`r" -NoNewline
+    }
 }
 
 try {
@@ -143,9 +167,12 @@ try {
     $currentFile = 0
     $failedFiles = 0
     
-    # Show spinner with download message
-    Write-Host "Downloading $totalFiles files..." -ForegroundColor Cyan
-    Show-Spinner -Message "Downloading $totalFiles files..." -Seconds 2
+    # Start spinner with download message (line 1)
+    Start-Spinner -Message "Downloading $totalFiles files..."
+    
+    # Add empty lines for file info and download status (lines 2 and 3)
+    Write-Host ""
+    Write-Host ""
     
     foreach ($file in $filesToDownload) {
         $currentFile++
@@ -158,10 +185,19 @@ try {
             New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
         }
         
+        # Move cursor up 2 lines to update file info and download status
+        Write-Host "`e[2A" -NoNewline
+        
         if (-not (Download-FileWithRetry -Url $url -OutputPath $outputPath -CurrentFile $currentFile -TotalFiles $totalFiles -FileName $file)) {
             $failedFiles++
         }
+        
+        # Move cursor back down to prepare for next file
+        Write-Host "`e[1B" -NoNewline
     }
+    
+    # Stop the spinner when done
+    Stop-Spinner
     
     if ($failedFiles -gt 0) {
         Write-Host "$failedFiles files failed to download. Aborting installation." -ForegroundColor Red

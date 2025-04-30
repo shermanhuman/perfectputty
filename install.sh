@@ -72,28 +72,51 @@ FILE_MANIFEST=(
   "tests/common/ascii/pagga.ascii"
 )
 
-# Show spinner function
-show_spinner() {
+# Global variables for spinner
+SPINNER_PID=""
+
+# Start the spinner animation
+start_spinner() {
   local message="$1"
-  local seconds="$2"
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  local start_time=$(date +%s)
-  local end_time=$((start_time + seconds))
-  local i=0
   
-  echo ""
+  # Kill any existing spinner
+  if [ -n "$SPINNER_PID" ]; then
+    kill -9 $SPINNER_PID 2>/dev/null
+    SPINNER_PID=""
+  fi
   
-  while [ $(date +%s) -lt $end_time ]; do
-    local temp=${spinstr#?}
-    printf "\r%c %s" "${spinstr:$i:1}" "$message"
-    local spinstr=$temp${spinstr%"$temp"}
-    sleep 0.1
-    i=$(( (i+1) % 10 ))
-  done
+  # Define spinner function
+  _spinner() {
+    local message="$1"
+    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    while true; do
+      local temp=${spinstr#?}
+      printf "\r%c %s" "${spinstr:$i:1}" "$message"
+      local spinstr=$temp${spinstr%"$temp"}
+      sleep 0.1
+      i=$(( (i+1) % 10 ))
+    done
+  }
   
-  # Clear the spinner line
-  printf "\r%-100s\r" " "
+  # Start spinner in background
+  _spinner "$message" &
+  SPINNER_PID=$!
 }
+
+# Stop the spinner animation
+stop_spinner() {
+  if [ -n "$SPINNER_PID" ]; then
+    kill -9 $SPINNER_PID 2>/dev/null
+    SPINNER_PID=""
+    # Clear the spinner line
+    printf "\r%-100s\r" " "
+  fi
+}
+
+# Clean up spinner on exit
+trap 'stop_spinner' EXIT
 
 # Download function with retry logic
 download_file() {
@@ -117,23 +140,25 @@ download_file() {
     file_size="$(echo "scale=2; $bytes/1024" | bc) KB"
   fi
   
-  # Print file info and download status
-  echo -e "${CYAN}[$current_file/$total_files] $file_path${NC}"
-  echo -ne "${GRAY}  Downloading ($file_size)...${NC}"
+  # Update the file info line (line 2)
+  printf "\r${CYAN}[$current_file/$total_files] $file_path                                        ${NC}\n"
+  
+  # Update the download status line (line 3)
+  printf "${GRAY}  Downloading ($file_size)...                                          ${NC}"
   
   while [ $attempt -lt $max_retries ] && [ "$success" = false ]; do
     attempt=$((attempt + 1))
     
     if curl -fsSL "$url" -o "$output_path" 2>/dev/null; then
       success=true
-      echo -e "${GREEN} Done!${NC}"
+      printf "\r${GRAY}  Downloading ($file_size)...${GREEN} Done!                                  ${NC}\n"
     else
       if [ $attempt -lt $max_retries ]; then
         backoff=$((2 ** attempt))
-        echo -e "${YELLOW} Failed, retrying in $backoff seconds...${NC}"
+        printf "\r${GRAY}  Downloading ($file_size)...${YELLOW} Failed, retrying in $backoff seconds...${NC}\n"
         sleep $backoff
       else
-        echo -e "${RED} Failed after $max_retries attempts${NC}"
+        printf "\r${GRAY}  Downloading ($file_size)...${RED} Failed after $max_retries attempts${NC}\n"
         return 1
       fi
     fi
@@ -147,17 +172,30 @@ TOTAL_FILES=${#FILE_MANIFEST[@]}
 CURRENT_FILE=0
 FAILED_FILES=0
 
-# Show spinner with download message
+# Start spinner with download message (line 1)
 echo -e "${CYAN}Downloading ${TOTAL_FILES} files...${NC}"
-show_spinner "Downloading ${TOTAL_FILES} files..." 2
+start_spinner "Downloading ${TOTAL_FILES} files..."
+
+# Add empty lines for file info and download status (lines 2 and 3)
+echo ""
+echo ""
 
 for file_path in "${FILE_MANIFEST[@]}"; do
   CURRENT_FILE=$((CURRENT_FILE + 1))
   
+  # Move cursor up 2 lines to update file info and download status
+  printf "\033[2A"
+  
   if ! download_file "$file_path" "$CURRENT_FILE" "$TOTAL_FILES"; then
     FAILED_FILES=$((FAILED_FILES + 1))
   fi
+  
+  # Move cursor back down to prepare for next file
+  printf "\033[1B"
 done
+
+# Stop the spinner when done
+stop_spinner
 
 # Check if any downloads failed
 if [ $FAILED_FILES -gt 0 ]; then
