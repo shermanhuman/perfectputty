@@ -18,20 +18,36 @@ function Run-AsciiArt {
 }
 
 # Main menu
-Write-Host "Available tests:"
-Write-Host "1. Color test - Shows all terminal colors"
-Write-Host "2. Unicode test - Tests Unicode character support"
-Write-Host "3. ASCII art - Displays ASCII art"
-Write-Host
-$testChoice = Read-Host "Enter test number to run (or 'q' to quit)"
+while ($true) {
+    Clear-Host
+    Write-Host "Available tests:"
+    Write-Host "1. Color test - Shows all terminal colors"
+    Write-Host "2. Unicode test - Tests Unicode character support"
+    Write-Host "3. ASCII art - Displays ASCII art"
+    Write-Host "q. Exit"
+    Write-Host
+    $testChoice = Read-Host "Enter test number to run"
 
-switch ($testChoice) {
-    "1" { Run-ColorTest }
-    "2" { Run-UnicodeTest }
-    "3" { Run-AsciiArt }
-    "q" { exit 0 }
-    default { 
-        Write-Host "Invalid choice."
-        exit 1
+    switch ($testChoice) {
+        "1" {
+            Run-ColorTest
+            Write-Host "`nPress any key to return to menu..."
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        "2" {
+            Run-UnicodeTest
+            Write-Host "`nPress any key to return to menu..."
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        "3" {
+            Run-AsciiArt
+            Write-Host "`nPress any key to return to menu..."
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        "q" { exit 0 }
+        default {
+            Write-Host "Invalid choice."
+            Start-Sleep -Seconds 2
+        }
     }
 }
