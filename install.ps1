@@ -69,7 +69,8 @@ function Show-DownloadProgress {
     # This method works correctly with PowerShell's character handling
     try {
         # These are the Unicode code points for the Braille characters
-        $brailleCodePoints = @(0x28CB, 0x28D9, 0x28F9, 0x28B8, 0x28BC, 0x28B4, 0x28A6, 0x28A7, 0x28C7, 0x28CF)
+        # ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏
+        $brailleCodePoints = @(0x280B, 0x2819, 0x2839, 0x2838, 0x283C, 0x2834, 0x2826, 0x2827, 0x2807, 0x280F)
         $index = $CurrentFile % $brailleCodePoints.Count
         $spinner = [char]::ConvertFromUtf32($brailleCodePoints[$index])
     }
