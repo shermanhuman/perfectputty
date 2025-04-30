@@ -69,7 +69,7 @@ function Show-DownloadProgress {
     
     # Clear the line and write the new status
     # $clearLine = " " * 100
-    # Write-Host "`r$clearLine" -NoNewline
+    Write-Host "`r$clearLine" -NoNewline
     Write-Host "`r$statusLine" -NoNewline
 }
 
@@ -134,7 +134,6 @@ function Download-FileWithRetry {
     }
 }
 
-# No need for separate spinner functions as we're using a single-line approach
 
 try {
     # Download all files
