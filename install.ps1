@@ -300,11 +300,20 @@ try {
         # Extract font
         Expand-Archive -Path $fontZip -DestinationPath $fontDir -Force
         
-        # Install font
+        # Install font silently (without confirmation dialogs)
         $fonts = (New-Object -ComObject Shell.Application).Namespace(0x14)
+        $fontCount = (Get-ChildItem -Path $fontDir -Filter "*.ttf").Count
+        Write-Host "Installing $fontCount font variations silently..." -ForegroundColor Cyan
+        
+        # Use option flags for silent installation:
+        # 0x4 = Do not display a progress dialog box
+        # 0x10 = Respond with "Yes to All" for any dialog box
+        # 0x14 = Combine both options
         Get-ChildItem -Path $fontDir -Filter "*.ttf" | ForEach-Object {
-            Write-Host "Installing font: $($_.Name)" -ForegroundColor Cyan
-            $fonts.CopyHere($_.FullName)
+            # Using 0x14 (20 in decimal) to suppress all dialogs
+            $fonts.CopyHere($_.FullName, 0x14)
+            # Small sleep to prevent potential issues with rapid installation
+            Start-Sleep -Milliseconds 100
         }
         
         # Clean up
