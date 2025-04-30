@@ -151,15 +151,11 @@ function Download-FileWithRetry {
     }
 }
 
-
 try {
     # Download all files
     $totalFiles = $filesToDownload.Count
     $currentFile = 0
     $failedFiles = 0
-    
-    # Add a blank line for the download progress
-    Write-Host ""
     
     foreach ($file in $filesToDownload) {
         $currentFile++
