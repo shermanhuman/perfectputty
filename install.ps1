@@ -41,6 +41,7 @@ $filesToDownload = @(
     # Test files
     "tests/run-tests.ps1",
     "tests/common/colortest.ps1",
+    "tests/common/unicode-test.ps1",
     "tests/common/unicode-test.sh",
     "tests/common/ascii/big.ascii",
     "tests/common/ascii/circle.ascii",

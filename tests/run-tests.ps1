@@ -5,9 +5,7 @@ function Run-ColorTest {
 }
 
 function Run-UnicodeTest {
-    # For now, we'll use the bash script with PowerShell
-    # Later we'll create a proper PowerShell version
-    Write-Host "Unicode test not yet implemented for PowerShell"
+    & "$PSScriptRoot\common\unicode-test.ps1"
 }
 
 function Run-AsciiArt {
