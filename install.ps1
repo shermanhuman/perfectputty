@@ -69,7 +69,7 @@ function Show-DownloadProgress {
     
     # Clear the line and write the new status
     $clearLine = " " * 100
-    Write-Host "`r$clearLine" -NoNewline
+    # Write-Host "`r$clearLine" -NoNewline
     Write-Host "`r$statusLine" -NoNewline
 }
 
