@@ -65,16 +65,26 @@ function Show-DownloadProgress {
         [string]$FileSize
     )
     
-    #$spinnerChars = @('-', '\', '|', '/')
-    $spinnerChars = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
-    $spinnerIndex = $CurrentFile % $spinnerChars.Count
-    $spinner = $spinnerChars[$spinnerIndex]
+    # Use Unicode Braille characters created from code points
+    # This method works correctly with PowerShell's character handling
+    try {
+        # These are the Unicode code points for the Braille characters
+        $brailleCodePoints = @(0x28CB, 0x28D9, 0x28F9, 0x28B8, 0x28BC, 0x28B4, 0x28A6, 0x28A7, 0x28C7, 0x28CF)
+        $index = $CurrentFile % $brailleCodePoints.Count
+        $spinner = [char]::ConvertFromUtf32($brailleCodePoints[$index])
+    }
+    catch {
+        # Fallback to ASCII if there's any issue
+        $asciiSpinnerChars = @('-', '\', '|', '/')
+        $index = $CurrentFile % $asciiSpinnerChars.Count
+        $spinner = $asciiSpinnerChars[$index]
+    }
     
     # Format the status line according to user's preferred format
     $statusLine = "$spinner [$CurrentFile/$TotalFiles] Downloading ($FileSize) $FileName"
     
     # Clear the line and write the new status
-    # $clearLine = " " * 100
+    $clearLine = " " * 100
     Write-Host "`r$clearLine" -NoNewline
     Write-Host "`r$statusLine" -NoNewline
 }
