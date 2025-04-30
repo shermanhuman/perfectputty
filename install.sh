@@ -79,9 +79,9 @@ show_download_progress() {
   local file_path="$3"
   local file_size="$4"
   
-  # Spinner characters
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  local spinner_index=$((current_file % 10))
+  # Simple spinner characters that work in all terminals
+  local spinstr='-\|/'
+  local spinner_index=$((current_file % 4))
   local spinner=${spinstr:$spinner_index:1}
   
   # Format the status line according to user's preferred format
