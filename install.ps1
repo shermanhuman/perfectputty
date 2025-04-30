@@ -186,9 +186,14 @@ try {
     }
     
     # Print success message on the same line where the spinner was
+    # Use the same approach that worked for the spinner characters
     try {
-        # Try using the six dot braille character directly
-        Write-Host "`r⠿ All files downloaded successfully!" -ForegroundColor $Mint
+        # Create the six dot braille character (⠿) using its Unicode code point
+        # This is the same method that worked for the spinner characters
+        $sixDotBraille = [char]::ConvertFromUtf32(0x283F)
+        
+        # Use the character in the success message with a carriage return
+        Write-Host "`r$sixDotBraille All files downloaded successfully!" -ForegroundColor $Mint
     }
     catch {
         # Fallback if there's any issue with the Unicode character
