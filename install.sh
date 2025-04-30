@@ -72,26 +72,55 @@ FILE_MANIFEST=(
   "tests/common/ascii/pagga.ascii"
 )
 
-# Spinner function
-spinner() {
-  local pid=$1
-  local delay=0.1
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-    local temp=${spinstr#?}
-    printf " %c  " "$spinstr"
-    local spinstr=$temp${spinstr%"$temp"}
-    sleep $delay
-    printf "\b\b\b\b"
-  done
-  printf "    \b\b\b\b"
+# Global variables for spinner
+SPINNER_PID=""
+CURRENT_STATUS=""
+
+# Start the spinner
+start_spinner() {
+  if [ -n "$SPINNER_PID" ]; then
+    return
+  fi
+  
+  # Define spinner function
+  _spinner() {
+    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    while true; do
+      local temp=${spinstr#?}
+      printf "\r%c %s" "${spinstr:$i:1}" "$CURRENT_STATUS"
+      local spinstr=$temp${spinstr%"$temp"}
+      sleep 0.1
+      i=$(( (i+1) % 10 ))
+    done
+  }
+  
+  # Start spinner in background
+  _spinner &
+  SPINNER_PID=$!
 }
+
+# Stop the spinner
+stop_spinner() {
+  if [ -n "$SPINNER_PID" ]; then
+    kill -9 $SPINNER_PID 2>/dev/null
+    SPINNER_PID=""
+    # Clear the spinner line
+    printf "\r%-100s\r" " "
+  fi
+}
+
+# Update spinner status
+update_status() {
+  CURRENT_STATUS="$1"
+}
+
+# Clean up spinner on exit
+trap 'stop_spinner' EXIT
 
 # Download function with retry logic
 download_file() {
   local file_path="$1"
-  local current_file="$2"
-  local total_files="$3"
   local output_path="$TEMP_DIR/$file_path"
   local url="$REPO_BASE_URL/$file_path"
   local max_retries=3
@@ -109,22 +138,25 @@ download_file() {
     file_size="$(echo "scale=2; $bytes/1024" | bc) KB"
   fi
   
-  # Print status line that will be updated in place
-  printf "${CYAN}[$current_file/$total_files] $file_path\n${GRAY}  Downloading ($file_size)...${NC}"
+  # Stop spinner to show download status
+  stop_spinner
+  
+  # Print download status
+  printf "${GRAY}  Downloading ($file_size)...${NC}"
   
   while [ $attempt -lt $max_retries ] && [ "$success" = false ]; do
     attempt=$((attempt + 1))
     
     if curl -fsSL "$url" -o "$output_path" 2>/dev/null; then
       success=true
-      printf "\r${CYAN}[$current_file/$total_files] $file_path\n${GRAY}  Downloading ($file_size)...${GREEN} Done!${NC}     \n"
+      printf "\r${GRAY}  Downloading ($file_size)...${GREEN} Done!${NC}     \n"
     else
       if [ $attempt -lt $max_retries ]; then
         backoff=$((2 ** attempt))
-        printf "\r${CYAN}[$current_file/$total_files] $file_path\n${GRAY}  Downloading ($file_size)...${YELLOW} Failed, retrying in $backoff seconds...${NC}\n"
+        printf "\r${GRAY}  Downloading ($file_size)...${YELLOW} Failed, retrying in $backoff seconds...${NC}\n"
         sleep $backoff
       else
-        printf "\r${CYAN}[$current_file/$total_files] $file_path\n${GRAY}  Downloading ($file_size)...${RED} Failed after $max_retries attempts${NC}     \n"
+        printf "\r${GRAY}  Downloading ($file_size)...${RED} Failed after $max_retries attempts${NC}     \n"
         return 1
       fi
     fi
@@ -134,49 +166,34 @@ download_file() {
 }
 
 # Download all files
-printf "${CYAN}Downloading ${#FILE_MANIFEST[@]} files... "
-
-# Start spinner in background
-spin() {
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  while true; do
-    for i in $(seq 0 9); do
-      printf "\b%s" "${spinstr:$i:1}"
-      sleep 0.1
-    done
-  done
-}
-
-# Start spinner
-spin &
-SPINNER_PID=$!
-trap "kill -9 $SPINNER_PID 2>/dev/null" EXIT
-
 TOTAL_FILES=${#FILE_MANIFEST[@]}
 CURRENT_FILE=0
 FAILED_FILES=0
 
+# Start spinner with initial status
+update_status "Downloading ${TOTAL_FILES} files..."
+start_spinner
+
 for file_path in "${FILE_MANIFEST[@]}"; do
   CURRENT_FILE=$((CURRENT_FILE + 1))
   
-  # Stop spinner before showing download progress
-  kill -9 $SPINNER_PID 2>/dev/null
-  printf "\b \n"
+  # Show current file
+  stop_spinner
+  echo -e "${CYAN}[$CURRENT_FILE/$TOTAL_FILES] $file_path${NC}"
   
-  if ! download_file "$file_path" "$CURRENT_FILE" "$TOTAL_FILES"; then
+  if ! download_file "$file_path"; then
     FAILED_FILES=$((FAILED_FILES + 1))
   fi
   
-  # Restart spinner if not the last file
+  # Restart spinner with updated status if not the last file
   if [ $CURRENT_FILE -lt $TOTAL_FILES ]; then
-    spin &
-    SPINNER_PID=$!
+    update_status "Downloading ${TOTAL_FILES} files... [$CURRENT_FILE/$TOTAL_FILES complete]"
+    start_spinner
   fi
 done
 
 # Make sure spinner is stopped
-kill -9 $SPINNER_PID 2>/dev/null
-printf "\b \n"
+stop_spinner
 
 # Check if any downloads failed
 if [ $FAILED_FILES -gt 0 ]; then
