@@ -65,8 +65,8 @@ function Show-DownloadProgress {
         [string]$FileSize
     )
     
-    # Simple spinner characters that work in all terminals
-    $spinnerChars = @('-', '\', '|', '/')
+    #$spinnerChars = @('-', '\', '|', '/')
+    $spinnerChars = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
     $spinnerIndex = $CurrentFile % $spinnerChars.Count
     $spinner = $spinnerChars[$spinnerIndex]
     
