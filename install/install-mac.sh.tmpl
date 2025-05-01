@@ -170,6 +170,44 @@ add_starship_config() {
   fi
 }
 
+# Function to safely read input
+safe_read() {
+    # Detect if we're running in a pipe
+    if [ -t 0 ]; then
+        # Terminal is interactive
+        read -r "$@"
+    else
+        # We're in a pipe, try to read from /dev/tty
+        if [ -t 1 ]; then  # Check if stdout is a terminal
+            # Interactive output available
+            read -r "$@" < /dev/tty
+        else
+            # Completely non-interactive - use default values
+            echo "Running in non-interactive mode. Using default values."
+            return 1
+        fi
+    fi
+}
+
+# Function to get user confirmation
+get_confirmation() {
+    local prompt="$1"
+    local default="${2:-n}"  # Default to 'n' if not specified
+    local response
+    
+    echo -n "$prompt"
+    if ! safe_read response; then
+        # Non-interactive mode, use default
+        response="$default"
+        echo "$default (default)"
+    fi
+    
+    case "$response" in
+        [yY]|[yY][eE][sS]) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # Download all files
 TOTAL_FILES=${#FILE_MANIFEST[@]}
 CURRENT_FILE=0
@@ -249,7 +287,7 @@ else
   
   if [ -f "$backup_file" ]; then
     echo -n "Would you like to restore from backup? (y/n): "
-    read -r restore < /dev/tty
+    safe_read restore
     
     if [ "$restore" = "y" ]; then
       echo -e "${LEMON}Restoring shell profile from $backup_file...${NC}"
@@ -295,7 +333,7 @@ if [ -f "$terminal_path" ]; then
     # Offer to restore from backup
     if [ -f "$backup_file" ]; then
       echo -n "Would you like to restore Terminal.app settings from backup? (y/n): "
-      read -r restore < /dev/tty
+      safe_read restore
       
       if [ "$restore" = "y" ]; then
         echo -e "${LEMON}Restoring Terminal.app settings from $backup_file...${NC}"
@@ -352,10 +390,7 @@ else
 fi
 
 # Install fonts
-echo -n "Would you like to install the SauceCodePro Nerd Font? (y/n): "
-read -r install_fonts < /dev/tty
-
-if [ "$install_fonts" = "y" ]; then
+if get_confirmation "Would you like to install the SauceCodePro Nerd Font? (y/n): " "n"; then
   echo -e "${PURPLE}Downloading SauceCodePro Nerd Font...${NC}"
   font_url="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/SourceCodePro.zip"
   font_zip="/tmp/SauceCodePro.zip"
@@ -380,10 +415,7 @@ if [ "$install_fonts" = "y" ]; then
 fi
 
 # Process add-ons
-echo -n "Would you like to install add-ons? (y/n): "
-read -r install_addons < /dev/tty
-
-if [ "$install_addons" = "y" ]; then
+if get_confirmation "Would you like to install add-ons? (y/n): " "n"; then
   addons_dir="$TEMP_DIR/addons"
   ADDONS=()
   ADDON_NAMES=()
@@ -434,7 +466,7 @@ if [ "$install_addons" = "y" ]; then
     while true; do
       echo
       echo -n "Enter numbers to toggle selection (e.g., '1 3'), or press Enter to continue: "
-      read -r input < /dev/tty
+      safe_read input
       
       if [ -z "$input" ]; then
         break
@@ -476,11 +508,7 @@ if [ "$install_addons" = "y" ]; then
 fi
 
 # Offer to run tests
-echo
-echo -n "Would you like to run tests to verify your installation? (y/n): "
-read -r run_tests < /dev/tty
-
-if [ "$run_tests" = "y" ]; then
+if get_confirmation "Would you like to run tests to verify your installation? (y/n): " "n"; then
   tests_path="$TEMP_DIR/tests/run-tests.sh"
   if [ -f "$tests_path" ]; then
     bash "$tests_path"
