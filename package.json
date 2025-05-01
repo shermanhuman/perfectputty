@@ -1,0 +1,11 @@
+{
+  "name": "perfectputty",
+  "version": "2.0.5",
+  "description": "A cross-platform environment configuration system",
+  "scripts": {
+    "build": "node build/index.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

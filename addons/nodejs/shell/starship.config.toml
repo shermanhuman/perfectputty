@@ -1,0 +1,4 @@
+[nodejs]
+format = "[$symbol($version )]($style)"
+symbol = " "
+style = "bold green"

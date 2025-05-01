@@ -1,0 +1,51 @@
+# Starship configuration for PerfectPutty
+# Theme: Perfect
+
+# PALETTE_PLACEHOLDER #
+
+# Define the prompt format with placeholders for addons
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+# ADDON_MODULES_PLACEHOLDER #
+$character
+"""
+
+# Core module configurations
+[character]
+success_symbol = "[❯](green)"
+error_symbol = "[❯](red)"
+vimcmd_symbol = "[❮](green)"
+
+[username]
+style_user = "yellow bold"
+style_root = "red bold"
+format = "[$user]($style)@"
+disabled = false
+show_always = true
+
+[hostname]
+ssh_only = false
+format = "[$hostname]($style) "
+style = "yellow bold"
+disabled = false
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "purple bold"
+format = "[$path]($style) "
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = ""
+style = "purple bold"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "purple bold"
+
+# ADDON_CONFIGS_PLACEHOLDER #

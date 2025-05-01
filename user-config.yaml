@@ -1,7 +1,9 @@
 # Global user configuration
 colorScheme: Perfect16
 font:
-  family: SauceCodePro Nerd Font
+  family:  SauceCodePro Nerd Font Mono
   size: 12
 terminal:
   scrollback: 10000
+shell:
+  theme: perfect

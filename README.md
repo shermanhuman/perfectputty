@@ -23,27 +23,39 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 Run in PowerShell as Administrator:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install.ps1 | iex
 ```
 
 For local installation:
 ```powershell
 cd path\to\perfectputty
-.\install.ps1
+.\dist\install.ps1
 ```
 
-### macOS/Linux
-
+### Linux
 
 Run in Terminal:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install-linux.sh | bash
 ```
 
 For local installation:
 ```bash
 cd path/to/perfectputty
-bash ./install.sh
+bash ./dist/install-linux.sh
+```
+
+### macOS
+
+Run in Terminal:
+```bash
+curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install-mac.sh | bash
+```
+
+For local installation:
+```bash
+cd path/to/perfectputty
+bash ./dist/install-mac.sh
 ```
 
 ## What Gets Installed
@@ -54,6 +66,9 @@ bash ./install.sh
   - Windows: Windows Terminal color scheme
   - macOS: Terminal.app profile
   - Linux: Configuration for various terminal emulators
+- **Starship Prompt**: Cross-shell prompt with customizable themes
+  - Integrates with add-ons for language-specific information
+  - Falls back to custom shell profiles if installation fails
 - **Shell Profile**: Custom shell configuration
   - Windows: PowerShell profile with git integration
   - macOS/Linux: Bash/Zsh profile with similar features
@@ -61,8 +76,12 @@ bash ./install.sh
 ### Optional Add-ons
 
 - **PuTTY** (Windows only): SSH and telnet client with custom configuration
-- **uv**: Python package installer and resolver from astral-sh/uv
+  - Uses color scheme from user-config.yaml
+  - Configurable font and scrollback settings
+- **Python**: Python environment with uv package manager
+  - Starship integration for showing Python version and virtual environment
 - **Node.js**: JavaScript runtime with fnm version manager
+  - Starship integration for showing Node.js version
 - More add-ons can be easily created and added
 
 ## Customization
@@ -84,14 +103,38 @@ terminal:
 ```
 perfectputty/
 ├── core/                      # Core components
-│   ├── colors/                # Color schemes
-│   ├── profiles/              # Shell profiles
+│   ├── color-schemes/         # Color schemes
+│   ├── profiles/              # Shell profiles (fallback if Starship fails)
+│   ├── shell-themes/          # Starship theme templates
 │   ├── terminal/              # Terminal configurations
 │   └── sounds/                # Sound files
 ├── addons/                    # Modular add-ons
+│   ├── nodejs/                # Node.js configuration
+│   │   ├── config.yaml        # Addon metadata
+│   │   ├── install-scripts/   # OS-specific installation scripts
+│   │   └── shell/             # Starship configuration
 │   ├── putty/                 # PuTTY configuration (Windows-only)
-│   ├── miniconda/             # Miniconda configuration
-│   └── nodejs/                # Node.js configuration
+│   │   ├── config.yaml        # Addon metadata
+│   │   ├── install-scripts/   # Installation scripts
+│   │   └── templates/         # Template files for configuration
+│   └── python/                # Python configuration
+│       ├── config.yaml        # Addon metadata
+│       ├── install-scripts/   # OS-specific installation scripts
+│       └── shell/             # Starship configuration
+├── build/                     # Build scripts
+│   ├── index.js               # Main build script
+│   ├── starship-theme-builder.js # Starship theme builder
+│   └── putty-template-builder.js # PuTTY template builder
+├── install/                   # Installation script templates
+│   ├── install.ps1.tmpl       # Windows PowerShell template
+│   ├── install-linux.sh.tmpl  # Linux shell template
+│   └── install-mac.sh.tmpl    # macOS shell template
+├── dist/                      # Build output (generated files)
+│   ├── shell-themes/          # Built shell themes
+│   ├── addons/                # Built addon configurations
+│   ├── install.ps1            # Generated Windows installer
+│   ├── install-linux.sh       # Generated Linux installer
+│   └── install-mac.sh         # Generated macOS installer
 ├── tests/                     # Tests
 │   ├── common/                # Common test files
 │   │   ├── ascii/             # ASCII art for tests
@@ -101,9 +144,8 @@ perfectputty/
 │   ├── mac_os/                # macOS specific tests
 │   ├── run-tests.ps1          # Windows test runner
 │   └── run-tests.sh           # Unix test runner
-├── install.sh                 # Unix installer script
-├── install.ps1                # Windows installer script
 ├── user-config.yaml           # User configuration file
+├── package.json               # Package info and version
 └── LICENSE                    # MIT License
 ```
 
@@ -111,10 +153,40 @@ perfectputty/
 
 Each add-on is a self-contained module with:
 
-- `config.yaml`: Metadata about the add-on
-- OS-specific installation scripts
+- `config.yaml`: Metadata about the add-on (name, description, supported platforms)
+- `install-scripts/`: Directory containing OS-specific installation scripts
+  - `windows.ps1`: Windows PowerShell installation script
+  - `linux.sh`: Linux installation script
+  - `macos.sh`: macOS installation script
+- `shell/`: Directory containing Starship configuration (if applicable)
+  - `starship.module.toml`: Module entry for the Starship format string
+  - `starship.config.toml`: Module configuration for Starship
+- `templates/`: Directory containing templates for configuration files (if applicable)
 
 You can select which add-ons to install during the installation process.
+
+## Build Process
+
+The project uses a build system to generate installation scripts and configuration files:
+
+1. Run the build script to generate the installation files:
+   ```bash
+   npm run build
+   ```
+
+2. The build process:
+   - Loads the color scheme from `user-config.yaml`
+   - Builds the Starship theme with the color palette
+   - Processes templates for all addons (like PuTTY settings)
+   - Generates installation scripts with embedded file manifests and addon registry
+   - Bumps the version number in `package.json`
+
+3. The generated files are placed in the `dist` directory:
+   - `dist/shell-themes/perfect.toml`: Starship theme
+   - `dist/addons/putty/putty-settings.reg`: PuTTY settings
+   - `dist/install.ps1`: Windows installation script
+   - `dist/install-linux.sh`: Linux installation script
+   - `dist/install-mac.sh`: macOS installation script
 
 ## VS Code configuration
 

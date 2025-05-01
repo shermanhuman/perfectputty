@@ -1,5 +1,7 @@
 # Perfect Environment Installer for Windows
 # This script installs the Perfect environment configuration for Windows
+# Version: {{VERSION}}
+# Generated on {{BUILD_DATE}}
 
 # Define color constants
 $Purple = [System.ConsoleColor]::Magenta    # 74569b - Headers, section titles
@@ -30,30 +32,7 @@ Write-Host "Created temporary directory: $tempDir" -ForegroundColor $Lavender
 
 # Define file manifest
 $filesToDownload = @(
-    # Core files
-    "core/profiles/powershell.ps1",
-    "core/terminal/windows.json",
-    "core/colors/perfect16.yaml",
-    "core/sounds/pop.wav",
-    
-    # Add-on files
-    "addons/putty/config.yaml",
-    "addons/putty/windows.ps1",
-    "addons/putty/putty-settings.reg",
-    "addons/python/config.yaml",
-    "addons/python/windows.ps1",
-    "addons/nodejs/config.yaml",
-    "addons/nodejs/windows.ps1",
-    
-    # Test files
-    "tests/run-tests.ps1",
-    "tests/common/colortest.ps1",
-    "tests/common/unicode-test.ps1",
-    "tests/common/ascii/big.ascii",
-    "tests/common/ascii/circle.ascii",
-    "tests/common/ascii/future.ascii",
-    "tests/common/ascii/mike.ascii",
-    "tests/common/ascii/pagga.ascii"
+{{FILE_MANIFEST}}
 )
 
 # Spinner animation function
@@ -151,6 +130,45 @@ function Download-FileWithRetry {
     }
 }
 
+# Addon registry
+$AddonRegistry = @{
+{{ADDON_REGISTRY}}
+}
+
+# Add Starship configuration for addon
+function Add-StarshipConfig {
+    param (
+        [string]$AddonName
+    )
+    
+    $starshipConfigPath = "$env:USERPROFILE\.config\starship.toml"
+    
+    # Check if Starship is installed and configured
+    if (Test-Path $starshipConfigPath) {
+        if ($AddonRegistry.ContainsKey($AddonName) -and $AddonRegistry[$AddonName].HasStarshipConfig) {
+            Write-Host "Adding $AddonName configuration to Starship..." -ForegroundColor $Purple
+            
+            # Read the current config
+            $currentConfig = Get-Content -Path $starshipConfigPath -Raw
+            
+            # Get addon module and config
+            $addonModule = $AddonRegistry[$AddonName].Starship.Module
+            $addonConfig = $AddonRegistry[$AddonName].Starship.Config
+            
+            # Replace module placeholder
+            $newConfig = $currentConfig -replace "# ADDON_MODULES_PLACEHOLDER #", "$addonModule`n# ADDON_MODULES_PLACEHOLDER #"
+            
+            # Add config
+            $newConfig = $newConfig -replace "# ADDON_CONFIGS_PLACEHOLDER #", "$addonConfig`n# ADDON_CONFIGS_PLACEHOLDER #"
+            
+            # Write the new config
+            Set-Content -Path $starshipConfigPath -Value $newConfig
+            
+            Write-Host "$AddonName configuration added to Starship successfully!" -ForegroundColor $Mint
+        }
+    }
+}
+
 try {
     # Download all files
     $totalFiles = $filesToDownload.Count
@@ -219,6 +237,9 @@ try {
         }
         terminal = @{
             scrollback = 10000
+        }
+        shell = @{
+            theme = "perfect"
         }
     }
     
@@ -354,6 +375,54 @@ try {
         Write-Host "Windows Terminal settings file not found" -ForegroundColor $Lemon
     }
     
+    # Install Starship
+    Write-Host "Installing Starship..." -ForegroundColor $Purple
+    
+    # Check if winget is available
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install --id Starship.Starship
+    } else {
+        # Fallback to direct installation
+        Invoke-WebRequest -Uri https://starship.rs/install.ps1 -OutFile $env:TEMP\install-starship.ps1
+        & $env:TEMP\install-starship.ps1 -BinDir "$env:USERPROFILE\.local\bin"
+        
+        # Add to PATH if not already there
+        $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+        if ($userPath -notlike "*$env:USERPROFILE\.local\bin*") {
+            [Environment]::SetEnvironmentVariable("PATH", "$userPath;$env:USERPROFILE\.local\bin", "User")
+            $env:PATH = "$env:PATH;$env:USERPROFILE\.local\bin"
+        }
+    }
+    
+    # Verify Starship installation
+    if (Get-Command starship -ErrorAction SilentlyContinue) {
+        Write-Host "Starship installed successfully!" -ForegroundColor $Mint
+        
+        # Get theme name from config
+        $config = Get-Content -Path $configPath -Raw | ConvertFrom-Yaml
+        $themeName = $config.shell.theme
+        
+        # Copy theme file
+        $themePath = Join-Path $tempDir "dist/shell-themes/$themeName.toml"
+        $themeDestPath = Join-Path $env:USERPROFILE ".config"
+        
+        # Create config directory if it doesn't exist
+        if (-not (Test-Path $themeDestPath)) {
+            New-Item -Path $themeDestPath -ItemType Directory -Force | Out-Null
+        }
+        
+        # Copy theme file
+        Copy-Item -Path $themePath -Destination "$themeDestPath\starship.toml" -Force
+        
+        # Update PowerShell profile to use Starship
+        $profileContent = $profileContent -replace "function prompt \{.*?\}", "# Using Starship for prompt`nInvoke-Expression (&starship init powershell)"
+        Set-Content -Path $profilePath -Value $profileContent
+        
+        Write-Host "Starship configured successfully!" -ForegroundColor $Mint
+    } else {
+        Write-Host "Starship installation failed. Using fallback prompt." -ForegroundColor $Lemon
+    }
+    
     # Install fonts
     Write-Host "Would you like to install the SauceCodePro Nerd Font? (y/n): " -NoNewline
     $installFonts = Read-Host
@@ -460,10 +529,13 @@ try {
                     $addon = $addons[$i]
                     Write-Host "Installing add-on: $($addon.Name)" -ForegroundColor $Purple
                     
-                    $scriptPath = Join-Path $addon.Path "windows.ps1"
+                    $scriptPath = Join-Path $addon.Path "install-scripts/windows.ps1"
                     if (Test-Path $scriptPath) {
                         # Execute the add-on installation script
                         & $scriptPath
+                        
+                        # Add Starship configuration if available
+                        Add-StarshipConfig -AddonName (Split-Path $addon.Path -Leaf)
                     } else {
                         Write-Host "No installation script found for $($addon.Name) on Windows" -ForegroundColor $Lemon
                     }

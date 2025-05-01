@@ -1,0 +1,4 @@
+[python]
+format = "[$symbol($version )(\($virtualenv\) )]($style)"
+symbol = " "
+style = "bold blue"
