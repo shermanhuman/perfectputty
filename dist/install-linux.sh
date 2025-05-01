@@ -1,7 +1,7 @@
 #!/bin/bash
 # Perfect Environment Installer for Linux
 # This script installs the Perfect environment configuration for Linux
-# Version: 2.0.5
+# Version: 2.0.6
 # Generated on 2025-05-01
 
 # Define color codes

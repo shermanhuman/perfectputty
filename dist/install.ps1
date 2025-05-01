@@ -1,6 +1,6 @@
 # Perfect Environment Installer for Windows
 # This script installs the Perfect environment configuration for Windows
-# Version: 2.0.5
+# Version: 2.0.6
 # Generated on 2025-05-01
 
 # Define color constants
@@ -437,6 +437,9 @@ try {
     # Check if winget is available
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget install --id Starship.Starship
+        
+        # Refresh PATH after winget installation to detect newly installed Starship
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     } else {
         # Fallback to direct installation
         Invoke-WebRequest -Uri https://starship.rs/install.ps1 -OutFile $env:TEMP\install-starship.ps1
