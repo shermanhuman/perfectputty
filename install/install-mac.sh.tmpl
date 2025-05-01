@@ -249,7 +249,7 @@ else
   
   if [ -f "$backup_file" ]; then
     echo -n "Would you like to restore from backup? (y/n): "
-    read -r restore
+    read -r restore < /dev/tty
     
     if [ "$restore" = "y" ]; then
       echo -e "${LEMON}Restoring shell profile from $backup_file...${NC}"
@@ -295,7 +295,7 @@ if [ -f "$terminal_path" ]; then
     # Offer to restore from backup
     if [ -f "$backup_file" ]; then
       echo -n "Would you like to restore Terminal.app settings from backup? (y/n): "
-      read -r restore
+      read -r restore < /dev/tty
       
       if [ "$restore" = "y" ]; then
         echo -e "${LEMON}Restoring Terminal.app settings from $backup_file...${NC}"
@@ -353,7 +353,7 @@ fi
 
 # Install fonts
 echo -n "Would you like to install the SauceCodePro Nerd Font? (y/n): "
-read -r install_fonts
+read -r install_fonts < /dev/tty
 
 if [ "$install_fonts" = "y" ]; then
   echo -e "${PURPLE}Downloading SauceCodePro Nerd Font...${NC}"
@@ -381,7 +381,7 @@ fi
 
 # Process add-ons
 echo -n "Would you like to install add-ons? (y/n): "
-read -r install_addons
+read -r install_addons < /dev/tty
 
 if [ "$install_addons" = "y" ]; then
   addons_dir="$TEMP_DIR/addons"
@@ -434,7 +434,7 @@ if [ "$install_addons" = "y" ]; then
     while true; do
       echo
       echo -n "Enter numbers to toggle selection (e.g., '1 3'), or press Enter to continue: "
-      read -r input
+      read -r input < /dev/tty
       
       if [ -z "$input" ]; then
         break
@@ -478,7 +478,7 @@ fi
 # Offer to run tests
 echo
 echo -n "Would you like to run tests to verify your installation? (y/n): "
-read -r run_tests
+read -r run_tests < /dev/tty
 
 if [ "$run_tests" = "y" ]; then
   tests_path="$TEMP_DIR/tests/run-tests.sh"
