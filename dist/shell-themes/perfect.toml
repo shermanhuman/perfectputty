@@ -1,0 +1,72 @@
+# Starship configuration for PerfectPutty
+# Theme: Perfect
+
+
+# Color palette based on Perfect16
+palette = "perfect"
+
+[palettes.perfect]
+black = "#444448"
+red = "#B94D35"
+green = "#799D6A"
+yellow = "#FFB964"
+blue = "#66728e"
+purple = "#AF87AE"
+cyan = "#6F99A6"
+white = "#DDDDDD"
+bright-black = "#554F4F"
+bright-red = "#D65F45"
+bright-green = "#7CB165"
+bright-yellow = "#FAD07A"
+bright-blue = "#82A3BF"
+bright-purple = "#EABBe9"
+bright-cyan = "#91CADB"
+bright-white = "#EFEFE0"
+
+
+# Define the prompt format with placeholders for addons
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+# ADDON_MODULES_PLACEHOLDER #
+$character
+"""
+
+# Core module configurations
+[character]
+success_symbol = "[❯](green)"
+error_symbol = "[❯](red)"
+vimcmd_symbol = "[❮](green)"
+
+[username]
+style_user = "yellow bold"
+style_root = "red bold"
+format = "[$user]($style)@"
+disabled = false
+show_always = true
+
+[hostname]
+ssh_only = false
+format = "[$hostname]($style) "
+style = "yellow bold"
+disabled = false
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "purple bold"
+format = "[$path]($style) "
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = ""
+style = "purple bold"
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "purple bold"
+
+# ADDON_CONFIGS_PLACEHOLDER #
