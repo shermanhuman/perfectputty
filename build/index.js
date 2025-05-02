@@ -407,7 +407,7 @@ async function generateInstallationScripts(version) {
     winTemplate = winTemplate.replace('{{ADDON_REGISTRY}}', generateWindowsAddonRegistry());
     
     // Write to dist directory
-    fs.writeFileSync(path.join(distDir, 'install.ps1'), winTemplate);
+    fs.writeFileSync(path.join(distDir, 'perfect-install.ps1'), winTemplate);
     console.log('Generated Windows installation script');
   }
   
@@ -423,7 +423,7 @@ async function generateInstallationScripts(version) {
     linuxTemplate = linuxTemplate.replace('{{ADDON_REGISTRY}}', generateUnixAddonRegistry());
     
     // Write to dist directory
-    const linuxScriptPath = path.join(distDir, 'install-linux.sh');
+    const linuxScriptPath = path.join(distDir, 'perfect-install-linux.sh');
     fs.writeFileSync(linuxScriptPath, linuxTemplate);
     fs.chmodSync(linuxScriptPath, '755'); // Make executable
     console.log('Generated Linux installation script');
@@ -441,7 +441,7 @@ async function generateInstallationScripts(version) {
     macTemplate = macTemplate.replace('{{ADDON_REGISTRY}}', generateUnixAddonRegistry());
     
     // Write to dist directory
-    const macScriptPath = path.join(distDir, 'install-mac.sh');
+    const macScriptPath = path.join(distDir, 'perfect-install-mac.sh');
     fs.writeFileSync(macScriptPath, macTemplate);
     fs.chmodSync(macScriptPath, '755'); // Make executable
     console.log('Generated macOS installation script');

@@ -23,39 +23,45 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 Run in PowerShell as Administrator:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/perfect-install.ps1 | iex
 ```
 
 For local installation:
 ```powershell
 cd path\to\perfectputty
-.\dist\install.ps1
+.\dist\perfect-install.ps1
 ```
 
 ### Linux
 
 Run in Terminal:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install-linux.sh | bash
+# Download the script
+curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/perfect-install-linux.sh -o perfect-install-linux.sh
+# Run the script
+bash perfect-install-linux.sh
 ```
 
 For local installation:
 ```bash
 cd path/to/perfectputty
-bash ./dist/install-linux.sh
+bash ./dist/perfect-install-linux.sh
 ```
 
 ### macOS
 
 Run in Terminal:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install-mac.sh | bash
+# Download the script
+curl -fsSL https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/perfect-install-mac.sh -o perfect-install-mac.sh
+# Run the script
+bash perfect-install-mac.sh
 ```
 
 For local installation:
 ```bash
 cd path/to/perfectputty
-bash ./dist/install-mac.sh
+bash ./dist/perfect-install-mac.sh
 ```
 
 ## What Gets Installed
@@ -132,9 +138,9 @@ perfectputty/
 ├── dist/                      # Build output (generated files)
 │   ├── shell-themes/          # Built shell themes
 │   ├── addons/                # Built addon configurations
-│   ├── install.ps1            # Generated Windows installer
-│   ├── install-linux.sh       # Generated Linux installer
-│   └── install-mac.sh         # Generated macOS installer
+│   ├── perfect-install.ps1            # Generated Windows installer
+│   ├── perfect-install-linux.sh       # Generated Linux installer
+│   └── perfect-install-mac.sh         # Generated macOS installer
 ├── tests/                     # Tests
 │   ├── common/                # Common test files
 │   │   ├── ascii/             # ASCII art for tests
@@ -184,9 +190,9 @@ The project uses a build system to generate installation scripts and configurati
 3. The generated files are placed in the `dist` directory:
    - `dist/shell-themes/perfect.toml`: Starship theme
    - `dist/addons/putty/putty-settings.reg`: PuTTY settings
-   - `dist/install.ps1`: Windows installation script
-   - `dist/install-linux.sh`: Linux installation script
-   - `dist/install-mac.sh`: macOS installation script
+   - `dist/perfect-install.ps1`: Windows installation script
+   - `dist/perfect-install-linux.sh`: Linux installation script
+   - `dist/perfect-install-mac.sh`: macOS installation script
 
 ## VS Code configuration
 
