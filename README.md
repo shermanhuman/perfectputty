@@ -23,7 +23,7 @@ Perfect Environment started as a customized shell and configuration for PuTTY on
 Run in PowerShell as Administrator:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/perfect-install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dist/install.ps1 | iex
 ```
 
 For local installation:
