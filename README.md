@@ -29,7 +29,7 @@ iwr -useb https://raw.githubusercontent.com/shermanhuman/perfectputty/master/dis
 For local installation:
 ```powershell
 cd path\to\perfectputty
-.\dist\perfect-install.ps1
+.\dist\install.ps1
 ```
 
 ### Linux
