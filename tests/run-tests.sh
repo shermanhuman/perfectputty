@@ -17,6 +17,10 @@ function run_ascii_art() {
   done
 }
 
+function run_nerdfont_test() {
+  bash "$(dirname "$0")/common/nerdfont-test.sh"
+}
+
 # Main menu
 while true; do
   clear
@@ -24,6 +28,7 @@ while true; do
   echo "1. Color test - Shows all terminal colors"
   echo "2. Unicode test - Tests Unicode character support"
   echo "3. ASCII art - Displays ASCII art"
+  echo "4. Nerd Font test - Displays Nerd Font symbols"
   echo "q. Exit"
   echo
   echo -n "Enter test number to run: "
@@ -44,6 +49,12 @@ while true; do
       ;;
     3)
       run_ascii_art
+      echo
+      echo "Press Enter to return to menu..."
+      read -r
+      ;;
+    4)
+      run_nerdfont_test
       echo
       echo "Press Enter to return to menu..."
       read -r
